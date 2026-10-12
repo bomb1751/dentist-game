@@ -149,6 +149,10 @@ function thumbnail(key,index) {
 
  return svg(renderers[key](sample),boxes[key]);
 }
+function setPartColor(color) {
+ look[activeCategory].color=color;
+ if(activeCategory==='face')look.ears.color=color;
+}
 function saveLook() { try{localStorage.setItem(storageKey,JSON.stringify(look));}catch{} }
 function renderOptions() {
  const category=categories.find(c=>c.key===activeCategory),part=look[activeCategory];
@@ -168,7 +172,7 @@ function renderColors() {
  colorsList.replaceChildren();
  for(const [name,value] of palettes[category.palette]){
   const button=document.createElement('button');button.type='button';button.className='color-swatch';button.style.setProperty('--swatch',value);button.dataset.color=value;button.title=name;button.setAttribute('aria-label',`${category.name}顏色：${name}`);button.classList.toggle('selected',color===value);button.setAttribute('aria-pressed',String(color===value));
-  button.addEventListener('click',()=>{look[activeCategory].color=value;changed(`${category.name}換成${name}色了！`);});colorsList.append(button);
+  button.addEventListener('click',()=>{setPartColor(value);changed(`${category.name}換成${name}色了！`);});colorsList.append(button);
  }
  customColor.value=color;document.querySelector('#colorValue').textContent=color.toUpperCase();
 }
@@ -183,9 +187,10 @@ for(const category of categories){
  const icon=document.createElement('span');icon.textContent=category.icon;icon.setAttribute('aria-hidden','true');button.append(icon,document.createTextNode(category.name));
  button.addEventListener('click',()=>{activeCategory=category.key;closeUpOverride=null;renderAvatar();renderOptions();});document.querySelector('#categories').append(button);
 }
-customColor.addEventListener('input',()=>{look[activeCategory].color=customColor.value;renderAvatar();document.querySelector('#colorValue').textContent=customColor.value.toUpperCase();document.querySelectorAll('.color-swatch').forEach(button=>{const active=button.dataset.color===customColor.value;button.classList.toggle('selected',active);button.setAttribute('aria-pressed',String(active));});saveLook();status.textContent='這個顏色，是你自己選的！';});
+customColor.addEventListener('input',()=>{setPartColor(customColor.value);renderAvatar();document.querySelector('#colorValue').textContent=customColor.value.toUpperCase();document.querySelectorAll('.color-swatch').forEach(button=>{const active=button.dataset.color===customColor.value;button.classList.toggle('selected',active);button.setAttribute('aria-pressed',String(active));});saveLook();status.textContent='這個顏色，是你自己選的！';});
 document.querySelector('#randomize').addEventListener('click',()=>{
  for(const category of categories){const palette=palettes[category.palette];look[category.key]={style:Math.floor(Math.random()*category.styles.length),color:palette[Math.floor(Math.random()*palette.length)][1]};}
+ look.ears.color=look.face.color;
  changed('驚喜！一個全新的搭配。');
 });
 document.querySelector('#reset').addEventListener('click',()=>{look=structuredClone(initial);changed('回到最初的樣子，再來玩一次！');});
