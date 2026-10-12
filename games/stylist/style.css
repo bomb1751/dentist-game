@@ -42,3 +42,7 @@ footer { margin:30px 0 0; color:#8b877c; text-align:center; font-size:.75rem; }
 @media(max-width:680px) { .studio-shell { padding:18px 14px 24px; } .navigation { margin-bottom:19px; } .studio { grid-template-columns:1fr; gap:15px; } .preview-panel { position:sticky; top:8px; z-index:3; box-shadow:0 8px 25px #51414a16; } .avatar { margin:0 12px; } .avatar svg { height:220px; } .preview-heading { margin:9px 15px 0; } .preview-actions { padding:9px 13px 0; } .preview-actions button { padding:10px 5px; } .status { margin:9px 10px 12px; } .category-tabs { grid-template-columns:repeat(5,minmax(0,1fr)); gap:6px; } .category-tab { min-height:61px; font-size:.7rem; } .category-tab span { font-size:1.15rem; } .options-panel { padding:16px 13px; } .style-option svg { height:64px; } .intro { margin-bottom:17px; font-size:.78rem; } }
 @media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation:none!important; transition:none!important; } }
 .view-toggle { border:0; padding:6px 9px; border-radius:9px; background:#f3ece5; color:#806e5b; font-size:.7rem; font-weight:800; }
+[hidden] { display:none!important; }
+.wear-tabs { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; padding:5px; border-radius:13px; background:#f0ece7; margin-bottom:18px; }
+.wear-tab { border:0; padding:11px 5px; border-radius:9px; background:transparent; color:#827988; font-size:.82rem; font-weight:800; }
+.wear-tab.selected { background:#fff; color:#db426d; box-shadow:0 2px 5px #51414a12; }

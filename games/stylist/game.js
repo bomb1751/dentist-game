@@ -7,15 +7,18 @@ const categories = [
   { key:'mouth', name:'嘴巴', icon:'👄', hint:'今天想露出哪種表情？', styles:['微微笑','開心笑','小圓嘴','愛心嘴','露齒笑','小貓嘴'], palette:'feature' },
   { key:'ears', name:'耳朵', icon:'👂', hint:'耳朵也能有自己的樣子', styles:['圓耳朵','小耳朵','大耳朵','精靈耳','戴耳環'], palette:'skin' },
   { key:'shirt', name:'衣服', icon:'👕', hint:'挑一件今天想穿的衣服', styles:['短袖上衣','條紋上衣','點點上衣','連帽上衣','小襯衫','長袖上衣'], palette:'clothes' },
-  { key:'pants', name:'褲子', icon:'👖', hint:'褲子和裙子，自由搭配', styles:['長褲','短褲','牛仔褲','條紋褲','吊帶褲','小裙子'], palette:'clothes' },
+  { key:'pants', name:'褲子', icon:'👖', hint:'褲子和裙子，自由搭配', styles:['長褲','短褲','牛仔褲','條紋褲','吊帶褲','小裙子'], styleIds:[0,1,2,3,5], palette:'clothes' },
+  { key:'outfit', name:'套裝', icon:'🧥', hint:'整套穿搭，也可以回到分開搭配', styles:['分開搭配','吊帶褲','吊帶短褲','運動套裝'], palette:'clothes' },
 ];
+const wearKeys=['shirt','pants','outfit'];
+const mainCategories=[...categories.filter(category=>!wearKeys.includes(category.key)),{key:'wear',name:'穿著',icon:'👗'}];
 const palettes = {
   skin: [['奶油','#ffe2bf'],['暖桃','#f3c5a0'],['小麥','#d99b71'],['焦糖','#ac704b'],['可可','#744832'],['莓粉','#f3a6c0'],['薄荷','#a8dfc5'],['薰衣草','#c2afe8']],
   hair: [['栗子','#634438'],['墨黑','#30313e'],['金黃','#e6b756'],['橘紅','#bd6346'],['銀白','#b9bfcc'],['莓粉','#eb90b1'],['海藍','#679fc8'],['葡萄','#9771c0']],
   feature: [['墨黑','#343249'],['咖啡','#80543c'],['海藍','#518db4'],['森林','#4d987b'],['莓紅','#cc6589'],['珊瑚','#e98c73'],['葡萄','#9771c0'],['金黃','#d4aa44']],
   clothes: [['蜜桃','#f19f9b'],['莓粉','#e782ab'],['奶黃','#edca65'],['薄荷','#77baa4'],['海藍','#76a8d1'],['牛仔','#4c6d9e'],['葡萄','#ae91cf'],['奶白','#f4e8d5'],['墨黑','#44475b'],['橘子','#de925b']],
 };
-const initial = { face:{style:0,color:'#f3c5a0'}, hair:{style:0,color:'#634438'}, brows:{style:0,color:'#634438'}, eyes:{style:1,color:'#343249'}, nose:{style:2,color:'#d99b71'}, mouth:{style:1,color:'#cc6589'}, ears:{style:0,color:'#f3c5a0'}, shirt:{style:0,color:'#77baa4'}, pants:{style:0,color:'#4c6d9e'} };
+const initial = { face:{style:0,color:'#f3c5a0'}, hair:{style:0,color:'#634438'}, brows:{style:0,color:'#634438'}, eyes:{style:1,color:'#343249'}, nose:{style:2,color:'#d99b71'}, mouth:{style:1,color:'#cc6589'}, ears:{style:0,color:'#f3c5a0'}, shirt:{style:0,color:'#77baa4'}, pants:{style:0,color:'#4c6d9e'}, outfit:{style:0,color:'#4c6d9e'} };
 const storageKey = 'little-playground-stylist-v1';
 let look = structuredClone(initial), activeCategory = 'face', closeUpOverride = null;
 try {
@@ -24,6 +27,7 @@ try {
     const part = saved?.[category.key];
     if (part && Number.isInteger(part.style) && part.style >= 0 && part.style < category.styles.length && /^#[0-9a-f]{6}$/i.test(part.color)) look[category.key] = {style:part.style,color:part.color};
   }
+  if(saved?.pants?.style===4 && !saved.outfit){look.outfit={style:1,color:look.pants.color};look.pants.style=0;}
 } catch { /* Storage may be disabled; the game still works. */ }
 const avatar = document.querySelector('#avatar'), stylesList = document.querySelector('#styles'), colorsList = document.querySelector('#colors');
 const status = document.querySelector('#status'), customColor = document.querySelector('#customColor');
@@ -121,11 +125,20 @@ function pants(s) {
  return result;
 }
 function overall(s) {
- if(s.pants.style!==4)return '';
+ if(s.pants.style!==4 && s.outfit?.style!==2)return '';
  const c=s.pants.color,edge=darken(c);
  return path('M150 265L160 267L164 303H196L200 267L210 265L207 352H153Z',c,edge)+ellipse(160,305,3,3,'#f1ca69')+ellipse(200,305,3,3,'#f1ca69')+path('M169 322H191V335Q180 343 169 335Z','none','#ffffff88',2);
 }
+function outfitLook(s) {
+ if(!s.outfit?.style)return s;
+ const styled={...s,pants:{...s.pants}};
+ styled.pants.style=s.outfit.style===2?1:s.outfit.style===1?4:0;
+ styled.pants.color=s.outfit.color;
+ if(s.outfit.style===3)styled.shirt={style:3,color:s.outfit.color};
+ return styled;
+}
 function character(s) {
+ s=outfitLook(s);
  const skin=s.face.color;
  return hairBack(s)+ellipse(180,482,76,10,'#e8d4bf66')+
  path('M158 211H202V258Q180 274 158 258Z',skin,darken(skin))+
@@ -137,20 +150,21 @@ function character(s) {
  hairFront(s)+eyebrows(s)+eyes(s)+nose(s)+mouth(s);
 }
 function svg(content,viewBox='0 0 360 510', accessible=false) { return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" ${accessible?'role="img" aria-labelledby="characterTitle"':'aria-hidden="true"'}>${accessible?'<title id="characterTitle">你搭配的角色</title>':''}${content}</svg>`; }
-function isCloseUp() { return closeUpOverride ?? (window.matchMedia('(max-width:680px)').matches && !['shirt','pants'].includes(activeCategory)); }
+function isCloseUp() { return closeUpOverride ?? (window.matchMedia('(max-width:680px)').matches && !wearKeys.includes(activeCategory)); }
 function renderAvatar() {
  const close=isCloseUp();avatar.innerHTML=svg(character(look),close?'70 25 220 265':'0 0 360 510',true);
  const button=document.querySelector('#viewToggle');button.textContent=close?'看看全身':'放大看臉';button.setAttribute('aria-pressed',String(close));
 }
 function thumbnail(key,index) {
  const sample=structuredClone(look);sample[key].style=index;
- const renderers={face, hair:s=>hairBack(s)+face(s)+hairFront(s),brows:eyebrows,eyes,nose,mouth,ears,shirt,pants:s=>pants(s)+overall(s)};
- const boxes={face:'88 30 184 207',hair:'65 25 230 270',brows:'120 84 120 54',eyes:'119 109 122 53',nose:'152 135 56 47',mouth:'145 159 70 58',ears:'76 96 208 92',shirt:'94 219 172 158',pants:'118 259 124 208'};
+ const renderers={face, hair:s=>hairBack(s)+face(s)+hairFront(s),brows:eyebrows,eyes,nose,mouth,ears,shirt,pants, outfit:s=>{const dressed=outfitLook(s);return pants(dressed)+shirt(dressed)+overall(dressed);}};
+ const boxes={face:'88 30 184 207',hair:'65 25 230 270',brows:'120 84 120 54',eyes:'119 109 122 53',nose:'152 135 56 47',mouth:'145 159 70 58',ears:'76 96 208 92',shirt:'94 219 172 158',pants:'118 338 124 128',outfit:'94 220 172 244'};
 
  return svg(renderers[key](sample),boxes[key]);
 }
 function setPartColor(color) {
  look[activeCategory].color=color;
+ if(activeCategory==='pants' || (activeCategory==='shirt' && look.outfit.style===3))look.outfit.style=0;
  if(activeCategory==='face')look.ears.color=color;
 }
 function saveLook() { try{localStorage.setItem(storageKey,JSON.stringify(look));}catch{} }
@@ -158,12 +172,15 @@ function renderOptions() {
  const category=categories.find(c=>c.key===activeCategory),part=look[activeCategory];
  document.querySelector('#categoryTitle').textContent=category.name;
  document.querySelector('#categoryHint').textContent=category.hint;
- document.querySelectorAll('.category-tab').forEach(button=>{const active=button.dataset.key===activeCategory;button.classList.toggle('selected',active);button.setAttribute('aria-pressed',String(active));});
+ document.querySelectorAll('.category-tab').forEach(button=>{const active=button.dataset.key===activeCategory || (button.dataset.key==='wear' && wearKeys.includes(activeCategory));button.classList.toggle('selected',active);button.setAttribute('aria-pressed',String(active));});
+ document.querySelector('#wearTabs').hidden=!wearKeys.includes(activeCategory);
+ document.querySelectorAll('.wear-tab').forEach(button=>{const active=button.dataset.key===activeCategory;button.classList.toggle('selected',active);button.setAttribute('aria-pressed',String(active));});
  stylesList.replaceChildren();
- category.styles.forEach((name,index)=>{
+ (category.styleIds || category.styles.map((_,index)=>index)).forEach(index=>{
+  const name=category.styles[index];
   const button=document.createElement('button');button.type='button';button.className='style-option';button.dataset.style=index;button.classList.toggle('selected',part.style===index);button.setAttribute('aria-pressed',String(part.style===index));button.setAttribute('aria-label',`${category.name}：${name}`);
   button.innerHTML=thumbnail(activeCategory,index);const label=document.createElement('span');label.textContent=name;button.append(label);
-  button.addEventListener('click',()=>{look[activeCategory].style=index;changed(`${category.name}換成${name}了！`);});stylesList.append(button);
+  button.addEventListener('click',()=>{look[activeCategory].style=index;if(activeCategory==='pants' || (activeCategory==='shirt' && look.outfit.style===3))look.outfit.style=0;changed(`${category.name}換成${name}了！`);});stylesList.append(button);
  });
  renderColors();
 }
@@ -182,14 +199,18 @@ function changed(message,options=true) {
  renderAvatar();if(options)renderOptions();saveLook();status.textContent=message;
  if(restore)document.querySelector(restore)?.focus({preventScroll:true});
 }
-for(const category of categories){
+for(const category of mainCategories){
  const button=document.createElement('button');button.type='button';button.className='category-tab';button.dataset.key=category.key;
  const icon=document.createElement('span');icon.textContent=category.icon;icon.setAttribute('aria-hidden','true');button.append(icon,document.createTextNode(category.name));
- button.addEventListener('click',()=>{activeCategory=category.key;closeUpOverride=null;renderAvatar();renderOptions();});document.querySelector('#categories').append(button);
+ button.addEventListener('click',()=>{activeCategory=category.key==='wear'?(wearKeys.includes(activeCategory)?activeCategory:'shirt'):category.key;closeUpOverride=null;renderAvatar();renderOptions();});document.querySelector('#categories').append(button);
+}
+for(const key of wearKeys){
+ const category=categories.find(item=>item.key===key),button=document.createElement('button');button.type='button';button.className='wear-tab';button.dataset.key=key;button.textContent=category.name;
+ button.addEventListener('click',()=>{activeCategory=key;closeUpOverride=null;renderAvatar();renderOptions();});document.querySelector('#wearTabs').append(button);
 }
 customColor.addEventListener('input',()=>{setPartColor(customColor.value);renderAvatar();document.querySelector('#colorValue').textContent=customColor.value.toUpperCase();document.querySelectorAll('.color-swatch').forEach(button=>{const active=button.dataset.color===customColor.value;button.classList.toggle('selected',active);button.setAttribute('aria-pressed',String(active));});saveLook();status.textContent='這個顏色，是你自己選的！';});
 document.querySelector('#randomize').addEventListener('click',()=>{
- for(const category of categories){const palette=palettes[category.palette];look[category.key]={style:Math.floor(Math.random()*category.styles.length),color:palette[Math.floor(Math.random()*palette.length)][1]};}
+ for(const category of categories){const palette=palettes[category.palette];const ids=category.styleIds || category.styles.map((_,index)=>index);look[category.key]={style:ids[Math.floor(Math.random()*ids.length)],color:palette[Math.floor(Math.random()*palette.length)][1]};}
  look.ears.color=look.face.color;
  changed('驚喜！一個全新的搭配。');
 });
