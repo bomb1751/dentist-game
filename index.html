@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#fff7e8" />
+    <meta name="description" content="給幼兒玩的簡單牙醫配對遊戲" />
+    <title>小小牙醫診所</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="game-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">今天換你當醫生</p>
+          <h1>小小牙醫診所</h1>
+        </div>
+        <button class="round-button" id="soundButton" type="button" aria-label="關閉聲音" aria-pressed="true">🔊</button>
+      </header>
+
+      <section class="clinic-card" aria-labelledby="patientName">
+        <div class="patient-row">
+          <div class="patient-avatar" id="patientAvatar" aria-hidden="true">🐰</div>
+          <div class="speech-bubble">
+            <p class="patient-label">今天的病人</p>
+            <h2 id="patientName">兔兔</h2>
+            <p id="patientMessage" aria-live="polite">牙齒怪怪的，請幫幫我！</p>
+          </div>
+        </div>
+
+        <div class="mouth-wrap">
+          <div class="mouth" aria-label="病人的嘴巴">
+            <div class="teeth" id="teeth"></div>
+            <div class="tongue" aria-hidden="true"></div>
+          </div>
+          <div class="sparkles" id="sparkles" aria-hidden="true"></div>
+        </div>
+
+        <div class="instruction" id="instruction" aria-live="polite">
+          <span class="instruction-icon">👆</span>
+          <span>先選工具，再點牙齒</span>
+        </div>
+      </section>
+
+      <section class="toolbox" aria-labelledby="toolboxTitle">
+        <div class="section-heading">
+          <h2 id="toolboxTitle">選一個工具</h2>
+          <span>看圖配對</span>
+        </div>
+        <div class="tools" id="tools">
+          <button class="tool" type="button" data-tool="brush" aria-pressed="false">
+            <span class="tool-picture">🪥</span>
+            <span>牙刷</span>
+          </button>
+          <button class="tool" type="button" data-tool="drill" aria-pressed="false">
+            <span class="tool-picture">🛠️</span>
+            <span>補牙器</span>
+          </button>
+          <button class="tool" type="button" data-tool="tweezers" aria-pressed="false">
+            <span class="tool-picture">🤏</span>
+            <span>小夾子</span>
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <dialog class="celebration" id="celebration">
+      <div class="celebration-emoji" id="celebrationEmoji">😁</div>
+      <p class="tiny-title">太棒了！</p>
+      <h2 id="celebrationTitle">牙齒健康了</h2>
+      <p id="celebrationMessage">你是很棒的小牙醫！</p>
+      <button id="nextPatient" type="button">下一位病人 <span aria-hidden="true">→</span></button>
+    </dialog>
+
+    <script src="game.js"></script>
+  </body>
+</html>
