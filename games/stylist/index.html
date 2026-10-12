@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#fff7e8" /><meta name="description" content="小小造型師：自由搭配臉形、髮型、五官、耳朵與穿搭，創作你的專屬角色。" />
+  <title>小小造型師 · 小小遊樂園</title><link rel="stylesheet" href="style.css?v=5" />
+</head>
+<body>
+<main class="studio-shell">
+  <nav class="navigation" aria-label="遊戲導覽"><a href="../../index.html">← 回遊樂園</a><span>自由創作 · 隨心搭配</span></nav>
+  <header class="studio-header"><div><p class="eyebrow">MAKE IT YOURS</p><h1>小小造型師<span aria-hidden="true">✦</span></h1><p class="intro">選個樣子、換個顏色，這就是你的角色！</p></div></header>
+  <div class="studio">
+    <section class="preview-panel" aria-label="你的角色">
+      <div class="preview-heading"><span>今天的主角</span><button class="view-toggle" id="viewToggle" type="button">放大看臉</button></div>
+      <div id="avatar" class="avatar"></div>
+      <div class="preview-actions"><button id="randomize" type="button">🎲 隨機搭配</button><button id="download" type="button">↓ 存成圖片</button></div>
+      <p class="status" id="status" role="status">怎麼搭，都有你的樣子。</p>
+    </section>
+    <section class="wardrobe" aria-label="造型工具箱">
+      <div class="category-tabs" id="categories" aria-label="選擇要變更的部位"></div>
+      <div class="options-panel">
+        <div class="options-heading"><div><p class="eyebrow" id="categoryHint">先選喜歡的臉形</p><h2 id="categoryTitle">臉形</h2></div><button id="reset" type="button" class="reset-button">重新開始</button></div>
+        <div id="styles" class="style-grid" role="group" aria-labelledby="categoryTitle"></div>
+        <div class="color-heading"><h3 id="colorTitle">挑一個顏色</h3><span>也可以自己選</span></div>
+        <div id="colors" class="color-grid" role="group" aria-labelledby="colorTitle"></div>
+        <label class="custom-color">自選顏色<input id="customColor" type="color" value="#f2c7a4" aria-label="自選目前部位的顏色" /><span id="colorValue">#F2C7A4</span></label>
+      </div>
+    </section>
+  </div>
+  <footer>沒有標準答案，喜歡就是最棒的搭配。</footer>
+</main>
+<script src="game.js?v=5"></script>
+</body>
+</html>

@@ -8,6 +8,14 @@ const games = [
     image: 'images/dentist.svg',
     action: '開始看診',
     mode: '拖曳遊玩 · 手機也能玩',
+  },  {
+    title: '小小造型師',
+    category: '自由創作 · 色彩搭配',
+    description: '換臉形、變髮型，搭配五官和衣服。創作一個屬於你的角色！',
+    href: 'games/stylist/',
+    image: 'images/stylist.svg',
+    action: '開始搭配',
+    mode: '自由換裝 · 可以存成圖片',
   },
 ];
 const list = document.querySelector('#gamesList');

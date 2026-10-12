@@ -8,6 +8,8 @@
 
 小小牙醫診所：https://bomb1751.github.io/dentist-game/games/dentist/
 
+小小造型師：https://bomb1751.github.io/dentist-game/games/stylist/
+
 ## 專案結構與新增遊戲
 
 - `index.html`、`home.css`：入口首頁與排版。
@@ -17,6 +19,16 @@
 - `images/`：首頁的遊戲插圖。
 
 下一款遊戲可放在 `games/<遊戲名稱>/index.html`，並提供回到 `../../index.html` 的連結。完成後加入首頁清單即可。
+
+## 造型遊戲操作
+
+- 九個可調整的部位：臉形、頭髮、眉毛、眼睛、鼻子、嘴巴、耳朵、衣服及褲子。
+- 共 51 種樣式，每個部位各自有預設色票，也可用自選顏色。
+- 手機更換五官時會放大看臉，挑衣服時看全身，也可手動切換預覽。
+- 可隨機搭配、重新開始，或下載 720 × 1020 的 PNG 圖片。
+- 造型使用 localStorage 保留在同一個瀏覽器；瀏覽器不允許儲存時仍可遊玩。
+- 所有角色與服裝都由 SVG 元件組成，無外部圖片或帳號需求。
+- 程式與排版位於 `games/stylist/`，首頁插圖位於 `images/stylist.svg`。
 
 ## 牙醫遊戲操作
 
