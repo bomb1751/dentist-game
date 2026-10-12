@@ -8,9 +8,11 @@ const categories = [
   { key:'ears', name:'耳朵', icon:'👂', hint:'耳朵也能有自己的樣子', styles:['圓耳朵','小耳朵','大耳朵','精靈耳','戴耳環'], palette:'skin' },
   { key:'shirt', name:'衣服', icon:'👕', hint:'挑一件今天想穿的衣服', styles:['短袖上衣','條紋上衣','點點上衣','連帽上衣','小襯衫','長袖上衣'], palette:'clothes' },
   { key:'pants', name:'褲子', icon:'👖', hint:'褲子和裙子，自由搭配', styles:['長褲','短褲','牛仔褲','條紋褲','吊帶褲','小裙子'], styleIds:[0,1,2,3,5], palette:'clothes' },
-  { key:'outfit', name:'套裝', icon:'🧥', hint:'整套穿搭，也可以回到分開搭配', styles:['分開搭配','吊帶褲','吊帶短褲','運動套裝'], palette:'clothes' },
+  { key:'outfit', name:'套裝', icon:'🧥', hint:'一件穿好的完整造型', styles:['分開搭配','吊帶褲','吊帶短褲','小洋裝','公主洋裝','連身服'], palette:'clothes' },
 ];
-const wearKeys=['shirt','pants','outfit'];
+const shoeCategory={key:'shoes',name:'鞋子',icon:'👟',hint:'最後，穿上喜歡的鞋子',styles:['運動鞋','小靴子','娃娃鞋','涼鞋','拖鞋','光腳丫'],palette:'clothes'};
+categories.push(shoeCategory);
+const wearKeys=['shirt','pants','outfit','shoes'];
 const mainCategories=[...categories.filter(category=>!wearKeys.includes(category.key)),{key:'wear',name:'穿著',icon:'👗'}];
 const palettes = {
   skin: [['奶油','#ffe2bf'],['暖桃','#f3c5a0'],['小麥','#d99b71'],['焦糖','#ac704b'],['可可','#744832'],['莓粉','#f3a6c0'],['薄荷','#a8dfc5'],['薰衣草','#c2afe8']],
@@ -18,7 +20,7 @@ const palettes = {
   feature: [['墨黑','#343249'],['咖啡','#80543c'],['海藍','#518db4'],['森林','#4d987b'],['莓紅','#cc6589'],['珊瑚','#e98c73'],['葡萄','#9771c0'],['金黃','#d4aa44']],
   clothes: [['蜜桃','#f19f9b'],['莓粉','#e782ab'],['奶黃','#edca65'],['薄荷','#77baa4'],['海藍','#76a8d1'],['牛仔','#4c6d9e'],['葡萄','#ae91cf'],['奶白','#f4e8d5'],['墨黑','#44475b'],['橘子','#de925b']],
 };
-const initial = { face:{style:0,color:'#f3c5a0'}, hair:{style:0,color:'#634438'}, brows:{style:0,color:'#634438'}, eyes:{style:1,color:'#343249'}, nose:{style:2,color:'#d99b71'}, mouth:{style:1,color:'#cc6589'}, ears:{style:0,color:'#f3c5a0'}, shirt:{style:0,color:'#77baa4'}, pants:{style:0,color:'#4c6d9e'}, outfit:{style:0,color:'#4c6d9e'} };
+const initial = { face:{style:0,color:'#f3c5a0'}, hair:{style:0,color:'#634438'}, brows:{style:0,color:'#634438'}, eyes:{style:1,color:'#343249'}, nose:{style:2,color:'#d99b71'}, mouth:{style:1,color:'#cc6589'}, ears:{style:0,color:'#f3c5a0'}, shirt:{style:0,color:'#77baa4'}, pants:{style:0,color:'#4c6d9e'}, outfit:{style:0,color:'#4c6d9e'}, shoes:{style:0,color:'#f4e8d5'} };
 const storageKey = 'little-playground-stylist-v1';
 let look = structuredClone(initial), activeCategory = 'face', closeUpOverride = null;
 try {
@@ -28,6 +30,7 @@ try {
     if (part && Number.isInteger(part.style) && part.style >= 0 && part.style < category.styles.length && /^#[0-9a-f]{6}$/i.test(part.color)) look[category.key] = {style:part.style,color:part.color};
   }
   if(saved?.pants?.style===4 && !saved.outfit){look.outfit={style:1,color:look.pants.color};look.pants.style=0;}
+ if(saved?.outfit?.style===3 && !saved._version){look.shirt={style:3,color:saved.outfit.color};look.pants={style:0,color:saved.outfit.color};look.outfit.style=0;}
 } catch { /* Storage may be disabled; the game still works. */ }
 const avatar = document.querySelector('#avatar'), stylesList = document.querySelector('#styles'), colorsList = document.querySelector('#colors');
 const status = document.querySelector('#status'), customColor = document.querySelector('#customColor');
@@ -124,28 +127,48 @@ function pants(s) {
  if(i===3)result+=[369,390,411,432].map(y=>path(`M141 ${y}H170M190 ${y}H220`,'none','#ffffff88',5)).join('');
  return result;
 }
-function overall(s) {
- if(s.pants.style!==4 && s.outfit?.style!==2)return '';
- const c=s.pants.color,edge=darken(c);
- return path('M150 265L160 267L164 303H196L200 267L210 265L207 352H153Z',c,edge)+ellipse(160,305,3,3,'#f1ca69')+ellipse(200,305,3,3,'#f1ca69')+path('M169 322H191V335Q180 343 169 335Z','none','#ffffff88',2);
+function outfit(s) {
+ const {style:i,color:c}=s.outfit,edge=darken(c);
+ if(!i)return pants(s)+shirt(s);
+ if(i===1 || i===2){
+  const base={...s,shirt:{style:0,color:'#fff8e8'},pants:{style:i===2?1:0,color:c}};
+  return shirt(base)+pants(base)+path('M150 251L160 253L164 301H196L200 253L210 251L215 354H145Z',c,edge)+ellipse(160,304,3,3,'#edc96a')+ellipse(200,304,3,3,'#edc96a')+path('M169 320H191V333Q180 343 169 333Z','none','#ffffff99',2);
+ }
+ if(i===3 || i===4){
+  const hem=i===4?'L118 422Q180 450 242 422':'L134 414Q180 436 226 414';
+  let dress=path('M159 244L145 246L117 270L129 291L146 280L151 319'+hem+'L209 319L214 280L231 291L243 270L215 246L201 244Q180 263 159 244Z',c,edge);
+  dress+=path('M151 319Q180 327 209 319','none','#fff8e8',6);
+  if(i===4)dress+=path('M180 321L159 309L159 333Z','#fff8e8')+path('M180 321L201 309L201 333Z','#fff8e8')+ellipse(180,321,5,5,'#efca6b')+path('M151 337L133 416M180 342V429M209 337L227 416','none','#ffffff55',3)+[144,162,198,216].map((x,k)=>ellipse(x,390+(k%2)*12,3,3,'#fff8e8')).join('');
+  else dress+=[274,292,308].map(y=>ellipse(180,y,2.5,2.5,'#fff8e8')).join('');
+  return dress;
+ }
+ return path('M159 244L140 249L115 278L107 334L128 340L143 294L138 451L170 453L180 382L190 453L222 451L217 294L232 340L253 334L245 278L220 249L201 244Q180 261 159 244Z',c,edge)+path('M180 260V366M144 343H216','none','#ffffff99',3)+[281,301,321].map(y=>ellipse(180,y,2,2,'#f3cc71')).join('')+path('M151 288H170V307H151M190 288H209V307H190','none','#ffffff88',2);
 }
-function outfitLook(s) {
- if(!s.outfit?.style)return s;
- const styled={...s,pants:{...s.pants}};
- styled.pants.style=s.outfit.style===2?1:s.outfit.style===1?4:0;
- styled.pants.color=s.outfit.color;
- if(s.outfit.style===3)styled.shirt={style:3,color:s.outfit.color};
- return styled;
+function shoes(s) {
+ const {style:i,color:c}=s.shoes,edge=darken(c);
+ function shoe(x,flip){
+  let part='';
+  if(i===5)part=path('M-12 4H11L15 18Q0 28 -25 19Q-26 8 -12 4Z',s.face.color,darken(s.face.color),2);
+  else if(i===1)part=path('M-12 -15H13V12L17 20Q-1 29 -26 20Q-26 8 -13 7Z',c,edge,2)+path('M-12 -10H12M-25 20Q0 27 17 20','none','#fff8e8',3);
+  else {
+   part=path('M-12 3H12L17 19Q-2 28 -26 19Q-26 7 -12 3Z',i===3||i===4?s.face.color:c,edge,2);
+   if(i===0)part+=path('M-23 19Q0 25 16 19','none','#fff8e8',4)+path('M-9 7L4 10M-12 11L2 14','none','#fff8e8',2);
+   if(i===2)part+=path('M-12 4Q0 15 12 4','none','#fff8e8',5)+path('M-12 11L12 13','none',edge,4)+ellipse(7,13,2,2,'#efca6b');
+   if(i===3)part+=path('M-15 6L12 13M-20 12L8 19','none',c,5)+path('M-24 21Q0 29 16 21','none',c,4);
+   if(i===4)part+=path('M-24 11Q-12 2 0 7L5 19Q-12 22 -25 17Z',c,edge,2);
+  }
+  return `<g transform="translate(${x} 450) scale(${flip} 1)">${part}</g>`;
+ }
+ return shoe(155,1)+shoe(205,-1);
 }
 function character(s) {
- s=outfitLook(s);
+
  const skin=s.face.color;
  return hairBack(s)+ellipse(180,482,76,10,'#e8d4bf66')+
  path('M158 211H202V258Q180 274 158 258Z',skin,darken(skin))+
  path('M126 279L116 353M234 279L244 353','none',skin,19)+ellipse(115,357,11,14,skin)+ellipse(245,357,11,14,skin)+
  path('M155 350V463M205 350V463','none',skin,25)+
- path('M143 453Q128 454 126 469Q146 479 168 471L167 454Z','#fff8e8','#c9b49d',2)+path('M217 453Q232 454 234 469Q214 479 192 471L193 454Z','#fff8e8','#c9b49d',2)+
- pants(s)+shirt(s)+overall(s)+ears(s)+face(s)+
+ outfit(s)+shoes(s)+ears(s)+face(s)+
  ellipse(131,162,12,7,'#ef92944d')+ellipse(229,162,12,7,'#ef92944d')+
  hairFront(s)+eyebrows(s)+eyes(s)+nose(s)+mouth(s);
 }
@@ -157,17 +180,17 @@ function renderAvatar() {
 }
 function thumbnail(key,index) {
  const sample=structuredClone(look);sample[key].style=index;
- const renderers={face, hair:s=>hairBack(s)+face(s)+hairFront(s),brows:eyebrows,eyes,nose,mouth,ears,shirt,pants, outfit:s=>{const dressed=outfitLook(s);return pants(dressed)+shirt(dressed)+overall(dressed);}};
- const boxes={face:'88 30 184 207',hair:'65 25 230 270',brows:'120 84 120 54',eyes:'119 109 122 53',nose:'152 135 56 47',mouth:'145 159 70 58',ears:'76 96 208 92',shirt:'94 219 172 158',pants:'118 338 124 128',outfit:'94 220 172 244'};
+ const renderers={face, hair:s=>hairBack(s)+face(s)+hairFront(s),brows:eyebrows,eyes,nose,mouth,ears,shirt,pants, outfit,shoes};
+ const boxes={face:'88 30 184 207',hair:'65 25 230 270',brows:'120 84 120 54',eyes:'119 109 122 53',nose:'152 135 56 47',mouth:'145 159 70 58',ears:'76 96 208 92',shirt:'94 219 172 158',pants:'118 338 124 128',outfit:'94 220 172 244',shoes:'116 427 128 62'};
 
  return svg(renderers[key](sample),boxes[key]);
 }
 function setPartColor(color) {
  look[activeCategory].color=color;
- if(activeCategory==='pants' || (activeCategory==='shirt' && look.outfit.style===3))look.outfit.style=0;
+ if(activeCategory==='pants' || activeCategory==='shirt')look.outfit.style=0;
  if(activeCategory==='face')look.ears.color=color;
 }
-function saveLook() { try{localStorage.setItem(storageKey,JSON.stringify(look));}catch{} }
+function saveLook() { try{localStorage.setItem(storageKey,JSON.stringify({...look,_version:2}));}catch{} }
 function renderOptions() {
  const category=categories.find(c=>c.key===activeCategory),part=look[activeCategory];
  document.querySelector('#categoryTitle').textContent=category.name;
@@ -180,7 +203,7 @@ function renderOptions() {
   const name=category.styles[index];
   const button=document.createElement('button');button.type='button';button.className='style-option';button.dataset.style=index;button.classList.toggle('selected',part.style===index);button.setAttribute('aria-pressed',String(part.style===index));button.setAttribute('aria-label',`${category.name}：${name}`);
   button.innerHTML=thumbnail(activeCategory,index);const label=document.createElement('span');label.textContent=name;button.append(label);
-  button.addEventListener('click',()=>{look[activeCategory].style=index;if(activeCategory==='pants' || (activeCategory==='shirt' && look.outfit.style===3))look.outfit.style=0;changed(`${category.name}換成${name}了！`);});stylesList.append(button);
+  button.addEventListener('click',()=>{look[activeCategory].style=index;if(activeCategory==='pants' || activeCategory==='shirt')look.outfit.style=0;changed(`${category.name}換成${name}了！`);});stylesList.append(button);
  });
  renderColors();
 }

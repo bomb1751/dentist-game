@@ -46,3 +46,4 @@ footer { margin:30px 0 0; color:#8b877c; text-align:center; font-size:.75rem; }
 .wear-tabs { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; padding:5px; border-radius:13px; background:#f0ece7; margin-bottom:18px; }
 .wear-tab { border:0; padding:11px 5px; border-radius:9px; background:transparent; color:#827988; font-size:.82rem; font-weight:800; }
 .wear-tab.selected { background:#fff; color:#db426d; box-shadow:0 2px 5px #51414a12; }
+.wear-tabs { grid-template-columns:repeat(4,minmax(0,1fr)); }
