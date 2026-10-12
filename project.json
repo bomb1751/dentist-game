@@ -1,7 +1,7 @@
 {
-  "name": "dentist-game",
+  "name": "little-playground",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
-  "sourceRoot": "apps/dentist-game",
+  "sourceRoot": "apps/little-playground",
   "targets": {}
 }

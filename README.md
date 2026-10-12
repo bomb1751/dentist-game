@@ -4,17 +4,17 @@
 
 ## 線上遊玩
 
-首頁：https://bomb1751.github.io/dentist-game/
+首頁：https://bomb1751.github.io/little-playground/
 
-小小牙醫診所：https://bomb1751.github.io/dentist-game/games/dentist/
+小小牙醫診所：https://bomb1751.github.io/little-playground/games/dentist/
 
-小小造型師：https://bomb1751.github.io/dentist-game/games/stylist/
+小小造型師：https://bomb1751.github.io/little-playground/games/stylist/
 
-小小廚師：https://bomb1751.github.io/dentist-game/games/chef/
+小小廚師：https://bomb1751.github.io/little-playground/games/chef/
 
-寵物洗澡店：https://bomb1751.github.io/dentist-game/games/pet-bath/
+寵物洗澡店：https://bomb1751.github.io/little-playground/games/pet-bath/
 
-我的小房間：https://bomb1751.github.io/dentist-game/games/room/
+我的小房間：https://bomb1751.github.io/little-playground/games/room/
 
 ## 專案結構與新增遊戲
 
