@@ -20,7 +20,7 @@ const ghost = document.querySelector('#dragTool');
 const meter = document.querySelector('#progressFill');
 const progressText = document.querySelector('#progressText');
 let currentPatient, selectedTool = null, lastPatientIndex = -1;
-let soundOn = true, drag = null, treatment = null, completionTimer;
+let soundOn = true, drag = null, treatment = null, treatments = [], completionTimer;
 
 function playNotes(notes) {
   if (!soundOn) return;
@@ -44,23 +44,27 @@ function hint(text, icon = '👆') {
   instruction.append(symbol, label);
 }
 function updateProgress(value, label) {
-  meter.style.width = `${value}%`;
-  document.querySelector('#progress').setAttribute('aria-valuenow', String(value));
-  progressText.textContent = `${label} ${value}%`;
+  treatment.progress = treatment.done ? 100 : treatment.problem === 'cavity' ? (treatment.stage === 'clean' ? value / 2 : 50 + value / 2) : value;
+  const total = Math.round(treatments.reduce((sum, item) => sum + (item.progress || 0), 0) / treatments.length);
+  const finished = treatments.filter(item => item.done).length;
+  meter.style.width = `${total}%`;
+  document.querySelector('#progress').setAttribute('aria-valuenow', String(total));
+  progressText.textContent = `已治好 ${finished}/2 顆 · ${label} ${value}%`;
 }
-function requiredTool() {
-  if (currentPatient.problem === 'stain') return 'brush';
-  if (currentPatient.problem === 'food') return 'tweezers';
-  return treatment.stage === 'clean' ? 'drill' : 'fill';
+function requiredTool(item = treatment) {
+  if (item.problem === 'stain') return 'brush';
+  if (item.problem === 'food') return 'tweezers';
+  return item.stage === 'clean' ? 'drill' : 'fill';
 }
 function guidance() {
   if (treatment.done) return '治療完成！';
-  if (currentPatient.problem === 'stain') return '拖曳牙刷，來回刷遍整顆黃牙';
-  if (currentPatient.problem === 'food') return '拖曳小夾子夾住菜渣，放進垃圾桶';
+  if (treatment.problem === 'stain') return '拖曳牙刷，來回刷遍整顆黃牙';
+  if (treatment.problem === 'food') return '拖曳小夾子夾住菜渣，放進垃圾桶';
   return treatment.stage === 'clean' ? '拖曳清蛀牙器，把黑色部分全部清乾淨' : '換填補器，拖曳把藍色洞洞全部補白';
 }
 function selectTool(name) {
   selectedTool = name;
+  treatment = treatments.find(item => !item.done && requiredTool(item) === name) || treatments.find(item => !item.done) || treatment;
   tools.forEach(tool => {
     const active = tool.dataset.tool === name;
     tool.classList.toggle('selected', active); tool.setAttribute('aria-pressed', String(active));
@@ -74,38 +78,48 @@ function choosePatient() {
   lastPatientIndex = index; currentPatient = patients[index]; selectedTool = null;
   document.querySelector('#patientAvatar').textContent = currentPatient.avatar;
   document.querySelector('#patientName').textContent = currentPatient.name;
-  document.querySelector('#patientMessage').textContent = currentPatient.message;
+  document.querySelector('#patientMessage').textContent = '有兩顆牙齒需要幫忙，請把它們都治好！';
   tools.forEach(tool => { tool.classList.remove('selected'); tool.setAttribute('aria-pressed', 'false'); });
-  bin.hidden = currentPatient.problem !== 'food'; bin.classList.remove('ready', 'received');
-  renderTeeth(); hint(guidance());
+  bin.classList.remove('ready', 'received', 'over');
+  renderTeeth(); bin.hidden = !treatments.some(item => item.problem === 'food');
+  hint('有兩個問題！拿起工具，拖曳治療牙齒');
 }
 function renderTeeth() {
-  teeth.replaceChildren();
-  const problemIndex = 1 + Math.floor(Math.random() * 6);
+  teeth.replaceChildren(); treatments = [];
+  const positions = Array.from({ length: 8 }, (_, index) => index);
+  for (let i = positions.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [positions[i], positions[j]] = [positions[j], positions[i]];
+  }
+  const problemPositions = positions.slice(0, 2);
+  const problems = ['stain', 'cavity', 'food'];
   for (let index = 0; index < 8; index++) {
     const tooth = document.createElement('div'); tooth.className = 'tooth';
     tooth.setAttribute('role', 'img'); tooth.setAttribute('aria-label', `第 ${index + 1} 顆健康牙齒`);
-    if (index === problemIndex) {
-      tooth.classList.add('issue'); tooth.dataset.problem = currentPatient.problem;
-      tooth.setAttribute('aria-label', '需要治療的牙齒');
-      treatment = { tooth, stage: 'clean', done: false };
-      if (currentPatient.problem === 'food') {
+    if (problemPositions.includes(index)) {
+      const problem = problems[Math.floor(Math.random() * problems.length)];
+      tooth.classList.add('issue'); tooth.dataset.problem = problem;
+      const names = { stain: '黃牙', cavity: '蛀牙', food: '卡菜渣' };
+      tooth.setAttribute('aria-label', `第 ${index + 1} 顆牙齒：${names[problem]}`);
+      treatment = { tooth, problem, stage: 'clean', done: false, progress: 0 };
+      treatments.push(treatment);
+      if (problem === 'food') {
         const food = document.createElement('span'); food.className = 'food-piece'; food.textContent = '🥦';
-        tooth.append(food); treatment.food = food; updateProgress(0, '送到垃圾桶');
+        tooth.append(food); treatment.food = food;
       } else {
         const canvas = document.createElement('canvas'); canvas.width = 120; canvas.height = 170;
         canvas.className = 'treatment-surface'; canvas.setAttribute('aria-hidden', 'true'); tooth.append(canvas);
-        treatment.canvas = canvas; treatment.ctx = canvas.getContext('2d', { willReadFrequently: true });
-        drawMask(); updateProgress(0, currentPatient.problem === 'stain' ? '刷牙' : '清蛀牙');
+        treatment.canvas = canvas; treatment.ctx = canvas.getContext('2d', { willReadFrequently: true }); drawMask();
       }
     }
     teeth.append(tooth);
   }
+  treatment = treatments[0]; updateProgress(0, '準備治療');
 }
 function drawMask() {
   const ctx = treatment.ctx; ctx.globalCompositeOperation = 'source-over'; ctx.clearRect(0, 0, 120, 170);
   ctx.beginPath();
-  if (currentPatient.problem === 'stain') {
+  if (treatment.problem === 'stain') {
     ctx.roundRect(0, 0, 120, 170, [24, 24, 38, 38]);
     const color = ctx.createLinearGradient(0, 0, 120, 170);
     color.addColorStop(0, '#ffe15b'); color.addColorStop(1, '#d8a519'); ctx.fillStyle = color;
@@ -129,49 +143,60 @@ function showGhost(x, y) {
   ghost.innerHTML = `${icons[selectedTool]}${drag?.food ? '<span class="carried-food">🥦</span>' : ''}`;
 }
 function tryPickup(x, y) {
-  if (drag.food || currentPatient.problem !== 'food') return;
-  if (inside(x, y, treatment.food.getBoundingClientRect(), 8)) {
-    drag.food = true; treatment.food.style.visibility = 'hidden';
-    bin.classList.add('ready'); hint('夾住了！拖到垃圾桶裡再放開', '🥦'); playNotes([[520, 0, .1]]);
+  if (drag.food || selectedTool !== 'tweezers') return;
+  const target = treatments.find(item => !item.done && item.problem === 'food' && inside(x, y, item.food.getBoundingClientRect(), 8));
+  if (target) {
+    treatment = target; drag.food = true; drag.target = target; target.food.style.visibility = 'hidden';
+    bin.classList.remove('received'); bin.classList.add('ready');
+    hint('夾住了！拖到垃圾桶裡再放開', '🥦'); playNotes([[520, 0, .1]]);
   }
 }
 function startDrag(event, toolName) {
-  if (!event.isPrimary || event.button !== 0 || treatment.done || drag) return;
+  if (!event.isPrimary || event.button !== 0 || treatments.every(item => item.done) || drag) return;
   if (toolName) selectTool(toolName);
   if (!selectedTool) { hint('先拿一個工具，再拖到牙齒上', '🧰'); return; }
-  if (selectedTool !== requiredTool()) { hint(guidance(), '💡'); return; }
   event.preventDefault();
   drag = { id: event.pointerId, x: event.clientX, y: event.clientY, food: false, capture: event.currentTarget };
   drag.capture.setPointerCapture(event.pointerId);
   tryPickup(event.clientX, event.clientY); showGhost(event.clientX, event.clientY);
 }
 function scrub(x, y) {
-  const rect = treatment.canvas.getBoundingClientRect();
-  if (!inside(x, y, rect)) return;
-  const ctx = treatment.ctx; ctx.globalCompositeOperation = 'destination-out';
+  const target = treatments.find(item => !item.done && item.canvas && inside(x, y, item.canvas.getBoundingClientRect()));
+  if (!target) return null;
+  treatment = target;
+  if (requiredTool(target) !== selectedTool) { hint(guidance(), '💡'); return null; }
+  const rect = target.canvas.getBoundingClientRect();
+  const ctx = target.ctx; ctx.globalCompositeOperation = 'destination-out';
   ctx.beginPath(); ctx.ellipse((x - rect.left) / rect.width * 120, (y - rect.top) / rect.height * 170,
     13 / rect.width * 120, 13 / rect.height * 170, 0, 0, Math.PI * 2); ctx.fill();
+  return target;
 }
 function moveDrag(event) {
   if (!drag || event.pointerId !== drag.id) return;
   const x = event.clientX, y = event.clientY;
-  if (currentPatient.problem === 'food') {
+  if (selectedTool === 'tweezers') {
     tryPickup(x, y); bin.classList.toggle('over', drag.food && inside(x, y, bin.getBoundingClientRect()));
   } else {
     const distance = Math.hypot(x - drag.x, y - drag.y);
     if (distance >= 1) {
-      const steps = Math.ceil(distance / 4);
-      for (let i = 1; i <= steps; i++) scrub(drag.x + (x - drag.x) * i / steps, drag.y + (y - drag.y) * i / steps);
-      const percentage = Math.round((1 - countPixels() / treatment.total) * 100);
-      updateProgress(percentage, currentPatient.problem === 'stain' ? '刷牙' : treatment.stage === 'clean' ? '清蛀牙' : '填補');
-      if (percentage >= 98) {
-        treatment.ctx.clearRect(0, 0, 120, 170);
-        if (currentPatient.problem === 'cavity' && treatment.stage === 'clean') {
-          treatment.stage = 'fill'; drawMask(); updateProgress(0, '填補'); endDrag(false);
-          hint('黑色清乾淨了！換紫色填補器，把洞補起來', '✨'); playNotes([[523, 0, .16], [659, .14, .2]]); return;
-        }
-        finishTreatment(); return;
+      const steps = Math.ceil(distance / 4), touched = new Set();
+      for (let i = 1; i <= steps; i++) {
+        const target = scrub(drag.x + (x - drag.x) * i / steps, drag.y + (y - drag.y) * i / steps);
+        if (target) touched.add(target);
       }
+      for (const target of touched) {
+        treatment = target;
+        const percentage = Math.round((1 - countPixels() / treatment.total) * 100);
+        updateProgress(percentage, treatment.problem === 'stain' ? '刷牙' : treatment.stage === 'clean' ? '清蛀牙' : '填補');
+        if (percentage >= 98) {
+          treatment.ctx.clearRect(0, 0, 120, 170);
+          if (treatment.problem === 'cavity' && treatment.stage === 'clean') {
+            treatment.stage = 'fill'; drawMask(); updateProgress(0, '填補'); endDrag(false);
+            hint('這顆清乾淨了！換填補器把洞補白', '✨'); playNotes([[523, 0, .16], [659, .14, .2]]);
+          } else finishTreatment();
+        }
+      }
+      if (!drag) return;
     }
   }
   drag.x = x; drag.y = y; showGhost(x, y);
@@ -182,6 +207,7 @@ function endDrag(drop, event) {
   ghost.hidden = true; bin.classList.remove('ready', 'over');
   if (previous.capture.hasPointerCapture(previous.id)) previous.capture.releasePointerCapture(previous.id);
   if (previous.food) {
+    treatment = previous.target;
     if (drop && event && inside(event.clientX, event.clientY, bin.getBoundingClientRect())) {
       treatment.food.remove(); bin.classList.add('received'); updateProgress(100, '送到垃圾桶'); finishTreatment();
     } else {
@@ -193,11 +219,15 @@ function finishTreatment() {
   if (treatment.done) return;
   treatment.done = true; endDrag(false); treatment.tooth.classList.remove('issue'); treatment.tooth.classList.add('healed');
   treatment.tooth.setAttribute('aria-label', '治療完成的健康牙齒');
-  updateProgress(100, '治療完成'); hint('牙齒健康了！', '✨'); makeSparkles();
+  updateProgress(100, '治療完成'); makeSparkles();
   playNotes([[523, 0, .18], [659, .14, .18], [784, .28, .3]]);
+  if (!treatments.every(item => item.done)) {
+    hint('治好一顆了！再把另一顆牙齒治好', '✨'); return;
+  }
+  hint('兩顆牙齒都健康了！', '✨');
   completionTimer = window.setTimeout(() => {
     document.querySelector('#celebrationEmoji').textContent = '😁';
-    document.querySelector('#celebrationTitle').textContent = currentPatient.done;
+    document.querySelector('#celebrationTitle').textContent = '兩顆牙齒都治好了！';
     document.querySelector('#celebrationMessage').textContent = `${currentPatient.name}說：謝謝小醫生！`;
     celebration.showModal();
   }, 650);
