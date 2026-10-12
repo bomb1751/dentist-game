@@ -1,6 +1,6 @@
 const {path:p,ellipse:e,rect:r}=Play;
-const foods={tomato:'番茄',pepper:'甜椒',mushroom:'蘑菇',corn:'玉米',cheese:'起司',olive:'橄欖',patty:'漢堡肉',lettuce:'生菜',onion:'洋蔥',top:'上層麵包',berry:'草莓',blueberry:'藍莓',cream:'鮮奶油',candle:'小蠟燭',chocolate:'巧克力',sprinkles:'彩色糖粒',sponge:'蛋糕層',pinkCream:'草莓奶油',basil:'小葉子',cheeseStar:'星星起司'};
-const dishes={pizza:{name:'披薩',add:['tomato','pepper','mushroom','corn','cheese','olive'],decorate:['basil','cheeseStar','tomato','olive']},burger:{name:'漢堡',add:['patty','lettuce','cheese','tomato','onion','top']},cake:{name:'蛋糕',add:['sponge','cream','pinkCream','chocolate','berry','blueberry'],decorate:['berry','blueberry','cream','candle','chocolate','sprinkles']}};
+const foods={tomato:'番茄',pepper:'甜椒',mushroom:'蘑菇',corn:'玉米',cheese:'起司',olive:'橄欖',patty:'漢堡肉',lettuce:'生菜',onion:'洋蔥',top:'上層麵包',berry:'草莓',blueberry:'藍莓',cream:'奶油花',candle:'小蠟燭',chocolate:'巧克力',sprinkles:'彩色糖粒',sponge:'蛋糕層',pinkCream:'草莓奶油',basil:'小葉子',cheeseStar:'星星起司',vanillaGlaze:'香草淋醬',strawberryGlaze:'草莓淋醬',chocolateGlaze:'巧克力淋醬'};
+const dishes={pizza:{name:'披薩',add:['tomato','pepper','mushroom','corn','cheese','olive'],decorate:['basil','cheeseStar','tomato','olive']},burger:{name:'漢堡',add:['patty','lettuce','cheese','tomato','onion','top']},cake:{name:'蛋糕',add:['sponge','vanillaGlaze','strawberryGlaze','chocolateGlaze'],decorate:['berry','blueberry','cream','candle','chocolate','sprinkles']}};
 let dish='pizza',mode='free',ingredientKind='add',selected=null,placed=[],order={};
 const scene=document.querySelector('#scene'),hint=document.querySelector('#hint'),dialog=document.querySelector('#celebration');
 function foodArt(key){
@@ -20,6 +20,10 @@ function foodArt(key){
  if(key==='candle')return r(-6,-8,12,33,3,'#a496cc')+p('M-5 2L5 -2M-5 14L5 10','none','#fff',3)+p('M0 -32Q-14 -13 0 -10Q14 -13 0 -32Z','#eec366')+p('M0 -22Q-6 -13 0 -12Q6 -13 0 -22Z','#fff2b6');
  if(key==='chocolate')return r(-24,-15,48,31,4,'#765340','#583b2d')+p('M0 -14V15M-23 0H23','none','#ac8363',3);
  if(key==='sponge')return r(-29,-16,58,33,7,'#eac6a1','#cfa980')+p('M-28 -6H28M-28 6H28','none','#fff2d5',4);
+ if(['vanillaGlaze','strawberryGlaze','chocolateGlaze'].includes(key)){
+  const color={vanillaGlaze:'#fff5e6',strawberryGlaze:'#f2a8b9',chocolateGlaze:'#936650'}[key];
+  return p('M-27 -1Q-25 23 0 24Q25 23 27 -1Z','#b9d8da','#83a9ae',2)+e(0,-1,27,9,color,'#83a9ae')+p('M6 -7L25 -25','none','#c39b75',5)+e(7,-8,8,4,color)+p('M-16 7Q-8 16 -1 16','none','#fff9',3);
+ }
  if(key==='pinkCream')return foodArt('cream').replaceAll('#fffef7','#f2a8b9').replaceAll('#eadfce','#df8ea4');
  if(key==='basil')return p('M0 16L1 -11','none','#5e9573',3)+e(-10,-5,14,8,'#82b68b')+e(11,2,14,8,'#70a77a');
  if(key==='cheeseStar')return p('M0 -24L7 -8L26 -6L12 6L16 23L0 14L-16 23L-12 6L-26 -6L-7 -8Z','#f1cc68','#d5aa43',2);
@@ -43,8 +47,8 @@ function sceneArt(){
   placed.forEach((item,index)=>{if(item.kind==='add'&&item.key!=='cheese')art+=pizzaLayer(item,index);});
  }
  if(dish==='cake'){
-  const top=cakeTop(),fillers=placed.filter(item=>item.kind==='add'&&['cream','pinkCream','chocolate'].includes(item.key));
-  const frosting=fillers.at(-1)?.key,color={cream:'#fff5e6',pinkCream:'#f2a8b9',chocolate:'#936650'}[frosting]||'#eac6a1';
+  const top=cakeTop(),fillers=placed.filter(item=>item.kind==='add'&&['vanillaGlaze','strawberryGlaze','chocolateGlaze'].includes(item.key));
+  const frosting=fillers.at(-1)?.key,color={vanillaGlaze:'#fff5e6',strawberryGlaze:'#f2a8b9',chocolateGlaze:'#936650'}[frosting]||'#eac6a1';
   art+=e(240,287,139,16,'#eddbcf')+r(138,top,204,284-top,14,color,'#cfa980');
   const layers=placed.filter(item=>item.kind==='add'&&item.key==='sponge').length;
   for(let i=1;i<=layers+1;i++)art+=p(`M141 ${top+(284-top)/(layers+2)*i}H339`,'none',frosting?'#ffffff55':'#fff1d5',5);
@@ -73,7 +77,7 @@ function refresh(){
  const chips=document.querySelector('#orderChips');chips.replaceChildren();
  for(const [entry,count] of Object.entries(order)){const [kind,key]=entry.split(':'),got=placed.filter(item=>item.key===key&&item.kind===kind).length;const chip=document.createElement('span');chip.className='chip'+(got>=count?' complete':'');chip.innerHTML=Play.svg(foodArt(key),'-40 -32 80 64');chip.append(document.createTextNode(`${kind==='decorate'?'裝飾・':kind==='add'?'加料・':''}${foods[key]} ${Math.min(got,count)}/${count}`));chips.append(chip);}
 }
-function makeOrder(){order=dish==='burger'?{'stack:patty':1,'stack:lettuce':1,'stack:cheese':1,'stack:top':1}:dish==='cake'?{'add:sponge':1,'add:cream':1,'decorate:berry':2,'decorate:candle':1}:{...Object.fromEntries([...dishes.pizza.add].sort(()=>Math.random()-.5).slice(0,3).map(key=>['add:'+key,1])),'decorate:basil':1};}
+function makeOrder(){order=dish==='burger'?{'stack:patty':1,'stack:lettuce':1,'stack:cheese':1,'stack:top':1}:dish==='cake'?{'add:sponge':1,'add:vanillaGlaze':1,'decorate:berry':2,'decorate:candle':1}:{...Object.fromEntries([...dishes.pizza.add].sort(()=>Math.random()-.5).slice(0,3).map(key=>['add:'+key,1])),'decorate:basil':1};}
 function reset(){Play.endDrag(null,true);placed=[];selected=null;ingredientKind="add";makeOrder();renderPantry();refresh();hint.textContent=mode==='order'?'照小訂單拖曳食材，做完按「上菜」':(dish==='burger'?'把內餡拖過去，疊成漢堡！':'先加料自動鋪好，再切到裝飾自由擺放。');}
 function setSelected(key){selected=key;document.querySelectorAll('[data-food]').forEach(b=>{b.classList.toggle('selected',b.dataset.food===key);b.setAttribute('aria-pressed',String(b.dataset.food===key));});}
 function startIngredient(event,key){
