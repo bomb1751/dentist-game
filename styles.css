@@ -229,3 +229,9 @@ h1 { margin: 0; font-size: clamp(1.65rem, 8vw, 2.4rem); letter-spacing: -.04em; 
 .progress-track { margin-top: 6px; height: 9px; background: #e8f0ed; border-radius: 8px; overflow: hidden; }
 #progressFill { width: 0; height: 100%; background: #64d6bd; transition: width .12s linear; }
 @media (max-width: 370px) { .toolbox { padding: 12px 8px; } .tools { gap: 5px; } .tool-picture svg { width: 43px; height: 43px; } .trash-bin { right: -4px; width: 75px; } }
+
+.game-navigation { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 20px; font-size: .78rem; }
+.game-navigation a { color: #55776d; font-weight: 900; text-decoration: none; padding: 9px 13px; background: #ffffffba; border-radius: 12px; }
+.game-navigation a:hover { background: #e9fbf6; }
+.game-navigation a:focus-visible { outline: 3px solid #db426d; outline-offset: 3px; }
+.game-navigation span { color: var(--muted); }

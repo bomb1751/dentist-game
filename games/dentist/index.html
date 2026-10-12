@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#fff7e8" />
+    <meta name="description" content="給幼兒玩的拖曳牙醫遊戲：刷牙、夾菜渣、清蛀牙與補牙" />
+    <title>小小牙醫診所</title>
+    <link rel="stylesheet" href="../../styles.css?v=4" />
+  </head>
+  <body>
+    <main class="game-shell">
+      <nav class="game-navigation" aria-label="遊戲導覽"><a href="../../index.html">← 回遊樂園</a><span>動手玩 · 生活練習</span></nav>
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">今天換你當醫生</p>
+          <h1>小小牙醫診所</h1>
+        </div>
+        <button class="round-button" id="soundButton" type="button" aria-label="關閉聲音" aria-pressed="true">🔊</button>
+      </header>
+
+      <section class="clinic-card" aria-labelledby="patientName">
+        <div class="patient-row">
+          <div class="patient-avatar" id="patientAvatar" aria-hidden="true">🐰</div>
+          <div class="speech-bubble">
+            <p class="patient-label">今天的病人</p>
+            <h2 id="patientName">兔兔</h2>
+            <p id="patientMessage" aria-live="polite">牙齒怪怪的，請幫幫我！</p>
+          </div>
+        </div>
+
+        <div class="mouth-wrap">
+          <div class="mouth" aria-label="病人的嘴巴">
+            <div class="teeth" id="teeth"></div>
+            <div class="tongue" aria-hidden="true"></div>
+          </div>
+          <div class="trash-bin" id="trashBin" aria-label="垃圾桶" hidden><span aria-hidden="true">🗑️</span><strong>放這裡</strong></div>
+          <div class="sparkles" id="sparkles" aria-hidden="true"></div>
+        </div>
+
+        <div class="treatment-progress"><span id="progressText">準備治療</span><div id="progress" class="progress-track" role="progressbar" aria-label="治療進度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="progressFill"></div></div></div>
+        <div class="instruction" id="instruction" aria-live="polite">
+          <span class="instruction-icon">👆</span>
+          <span>拿起工具，拖曳治療牙齒</span>
+        </div>
+      </section>
+
+      <section class="toolbox" aria-labelledby="toolboxTitle">
+        <div class="section-heading">
+          <h2 id="toolboxTitle">選一個工具</h2>
+          <span>拿起來拖曳</span>
+        </div>
+        <div class="tools" id="tools">
+          <button class="tool" type="button" data-tool="brush" aria-pressed="false">
+            <span class="tool-picture">🪥</span>
+            <span>牙刷</span>
+          </button>
+          <button class="tool" type="button" data-tool="drill" aria-pressed="false">
+            <span class="tool-picture">🛠️</span>
+            <span>清蛀牙</span>
+          </button>
+          <button class="tool" type="button" data-tool="fill" aria-pressed="false"><span class="tool-picture"></span><span>填補器</span></button>
+          <button class="tool" type="button" data-tool="tweezers" aria-pressed="false">
+            <span class="tool-picture">🤏</span>
+            <span>小夾子</span>
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <dialog class="celebration" id="celebration">
+      <div class="celebration-emoji" id="celebrationEmoji">😁</div>
+      <p class="tiny-title">太棒了！</p>
+      <h2 id="celebrationTitle">牙齒健康了</h2>
+      <p id="celebrationMessage">你是很棒的小牙醫！</p>
+      <button id="nextPatient" type="button">下一位病人 <span aria-hidden="true">→</span></button>
+    </dialog>
+
+    <div class="drag-tool" id="dragTool" aria-hidden="true" hidden></div>
+    <script src="../../game.js?v=4"></script>
+  </body>
+</html>
+
