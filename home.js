@@ -19,7 +19,7 @@ const games = [
   },  {
     title:'小小廚師', category:'動手製作 · 美味創作',
     description:'做披薩、疊漢堡、裝飾蛋糕。自由搭配，也能照客人的小訂單做料理！',
-    href:'games/chef/', image:'images/chef.svg', action:'開始料理', mode:'拖曳食材 · 三種料理',
+    href:'games/chef/', image:'images/chef.svg?v=11', action:'開始料理', mode:'拖曳食材 · 三種料理',
   },
   {
     title:'寵物洗澡店', category:'溫柔照顧 · 泡泡時光',
