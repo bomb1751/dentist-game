@@ -26,11 +26,6 @@ const games = [
     description:'搓掉髒污、沖掉泡泡、吹乾毛毛，再幫小動物戴上漂亮蝴蝶結。',
     href:'games/pet-bath/', image:'images/pet-bath.svg', action:'開始洗澡', mode:'動手清洗 · 三位小客人',
   },
-  {
-    title:'我的小房間', category:'空間佈置 · 自由創作',
-    description:'搬動家具、換個樣子，挑牆壁和地板的配色。佈置你的小天地！',
-    href:'games/room/', image:'images/room.svg', action:'開始佈置', mode:'自由擺放 · 可以存成圖片',
-  },
 ];
 const list = document.querySelector('#gamesList');
 for (const game of games) {

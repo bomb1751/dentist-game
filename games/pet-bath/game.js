@@ -4,7 +4,7 @@ const stepNames=['搓洗','沖水','吹乾','打扮'];
 const toolNames={soap:'泡泡海綿',rinse:'小蓮蓬頭',dry:'吹風機',pink:'粉紅結',blue:'藍色結',gold:'黃色結'};
 let petIndex=0,stage=0,selected=null,bow=null,totalPixels=1,celebrationTimer;
 const scene=document.querySelector('#scene'),hint=document.querySelector('#hint'),dialog=document.querySelector('#celebration');
-let canvas,ctx;
+let canvas,ctx,furMask,lather,latherCtx;
 function bowArt(color){return p('M0 0L-30 -17Q-38 0 -30 17Z',color,'#8e6b77',2)+p('M0 0L30 -17Q38 0 30 17Z',color,'#8e6b77',2)+e(0,0,7,8,color,'#8e6b77',2);}
 function toolArt(key){
  if(key==='soap')return r(-28,-17,56,34,10,'#f3ce65','#cba044')+[-13,3,17].map((x,i)=>e(x,-15-i%2*6,7,7,'#fffdf0','#eadab8')).join('')+e(-15,2,3,3,'#dcae45')+e(7,6,3,3,'#dcae45');
@@ -13,7 +13,9 @@ function toolArt(key){
  return bowArt({pink:'#ed9db4',blue:'#8fb8dc',gold:'#edc566'}[key]);
 }
 function animalArt(pet=pets[petIndex]){
- let art='';const c=pet.fur;
+ const base=pet.fur;
+ const shade=amount=>'#'+base.slice(1).match(/../g).map(value=>Math.round(parseInt(value,16)*amount).toString(16).padStart(2,'0')).join('');
+ let art=`<defs><radialGradient id="furCoat" cx="36%" cy="22%" r="85%"><stop offset="0" stop-color="${base}"/><stop offset=".58" stop-color="${base}"/><stop offset="1" stop-color="${shade(.88)}"/></radialGradient></defs>`;const c='url(#furCoat)';
  if(pet.kind==='rabbit')art+=e(200, 65,20,52,c,'#c9aa90')+e(280,65,20,52,c,'#c9aa90')+e(200,63,10,36,'#e8b5bb')+e(280,63,10,36,'#e8b5bb');
  if(pet.kind==='dog')art+=p('M181 95Q126 97 151 184Q176 205 193 166Z','#a97555','#926345')+p('M299 95Q354 97 329 184Q304 205 287 166Z','#a97555','#926345');
  if(pet.kind==='cat')art+=p('M169 126L170 63L221 103Z',c,'#9c8676')+p('M311 126L310 63L259 103Z',c,'#9c8676')+p('M178 111L178 78L202 104Z','#e9b8b5')+p('M302 111L302 78L278 104Z','#e9b8b5');
@@ -23,19 +25,54 @@ function animalArt(pet=pets[petIndex]){
  return art;
 }
 function sceneArt(){return r(0,0,480,360,0,'#e7f5f4')+e(74, 65,20,20,'#fff8')+e(405,107,12,12,'#fff8')+e(240,289,192,37,'#d2dfef','#afc3dc')+animalArt()+(bow?`<g transform="translate(240 245) scale(.85)">${toolArt(bow)}</g>`:'')+p('M49 283Q240 342 431 283L406 335Q240 381 74 335Z','#c2d4eb','#9cb6d5',3)+p('M66 288Q240 337 414 288','none','#f7fcff',8);}
-function inFur(x,y){return ((x-240)/73)**2+((y-141)/59)**2<=1 || ((x-240)/78)**2+((y-216)/67)**2<=1;}
+// Use the actual animal silhouette, including ears and paws, as a material mask.
+function makeFurMask(){
+ const mask=document.createElement('canvas');mask.width=480;mask.height=360;const m=mask.getContext('2d');const shape=new Path2D();
+ function oval(x,y,rx,ry){const part=new Path2D();part.ellipse(x,y,rx,ry,0,0,Math.PI*2);m.fillStyle='#fff';m.fill(part);}
+ oval(240,216,82,76);oval(240,140,77,66);oval(197,276,25,18);oval(283,276,25,18);
+ const kind=pets[petIndex].kind;
+ if(kind==='rabbit'){oval(200,65,20,52);oval(280,65,20,52);}
+ if(kind==='dog'){shape.addPath(new Path2D('M181 95Q126 97 151 184Q176 205 193 166Z'));shape.addPath(new Path2D('M299 95Q354 97 329 184Q304 205 287 166Z'));}
+ if(kind==='cat'){shape.addPath(new Path2D('M169 126L170 63L221 103Z'));shape.addPath(new Path2D('M311 126L310 63L259 103Z'));}
+ m.fillStyle='#fff';m.fill(shape);m.globalCompositeOperation='destination-out';
+ // Keep expressions visible instead of plastering dirt and foam over the eyes.
+ for(const [x,y,rx,ry] of [[212,141,12,14],[268,141,12,14],[240,179,42,27]]){m.beginPath();m.ellipse(x,y,rx,ry,0,0,Math.PI*2);m.fill();}
+ if(kind==='rabbit')for(const x of [200,280]){m.beginPath();m.ellipse(x,63,9,35,0,0,Math.PI*2);m.fill();}
+ return mask;
+}
+function randomGenerator(seed){return()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};}
+function clipToFur(context){context.globalCompositeOperation='destination-in';context.drawImage(furMask,0,0);context.globalCompositeOperation='source-over';}
+function bubble(context,x,y,radius){
+ const fill=context.createRadialGradient(x-radius*.32,y-radius*.38,1,x,y,radius);fill.addColorStop(0,'#fffffff5');fill.addColorStop(.7,'#f8fcf0e8');fill.addColorStop(1,'#c4dcd8b0');
+ context.beginPath();context.arc(x,y,radius,0,Math.PI*2);context.fillStyle=fill;context.fill();context.strokeStyle='#ffffffbc';context.lineWidth=1.1;context.stroke();
+ context.beginPath();context.arc(x-radius*.22,y-radius*.23,radius*.48,Math.PI*1.06,Math.PI*1.55);context.strokeStyle='#fff';context.lineWidth=Math.max(1,radius*.13);context.stroke();
+}
 function countPixels(){const data=ctx.getImageData(0,0,480,360).data;let n=0;for(let i=3;i<data.length;i+=4)if(data[i]>20)n++;return n;}
 function seedOverlay(){
- ctx.globalCompositeOperation='source-over';ctx.clearRect(0,0,480,360);
- for(let y=100;y<=260;y+=27)for(let x=175;x<=307;x+=27){if(!inFur(x,y))continue;const shift=(x+y)%9;
-  ctx.beginPath();
-  if(stage===0){if((x+y)%3===1)continue;ctx.ellipse(x+shift-4,y,9+(x%5),6+(y%5),.4,0,Math.PI*2);ctx.fillStyle='#9b704ccc';ctx.fill();}
-  if(stage===1){ctx.arc(x,y,16,0,Math.PI*2);ctx.fillStyle='#fffef2ee';ctx.fill();ctx.strokeStyle='#dae8e3';ctx.lineWidth=2;ctx.stroke();ctx.beginPath();ctx.arc(x-5,y-5,4,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();}
-  if(stage===2){ctx.moveTo(x,y-10);ctx.quadraticCurveTo(x-12,y+4,x,y+8);ctx.quadraticCurveTo(x+12,y+4,x,y-10);ctx.fillStyle='#68b9d3bb';ctx.fill();}
+ ctx.globalCompositeOperation='source-over';ctx.clearRect(0,0,480,360);latherCtx.clearRect(0,0,480,360);
+ if(stage>2){totalPixels=1;return;}
+ const random=randomGenerator(7121+petIndex*899+stage*3109);
+ ctx.fillStyle=['#92734c48','#f7fbf2c4','#6dacc63a'][stage];ctx.fillRect(0,0,480,360);
+ // Jittered, stratified coverage avoids both empty body regions and rows of stamps.
+ for(let y=13;y<=294;y+=21)for(let x=140;x<=340;x+=21){
+  const px=x+(random()-.5)*19,py=y+(random()-.5)*19;
+  if(stage===0){
+   const radius=10+random()*13,gradient=ctx.createRadialGradient(px,py,1,px,py,radius);
+   gradient.addColorStop(0,'#86603aa8');gradient.addColorStop(.52,'#9c784b70');gradient.addColorStop(1,'#9c784b00');
+   ctx.save();ctx.translate(px,py);ctx.rotate(random()*Math.PI);ctx.scale(1,.5+random()*.45);ctx.translate(-px,-py);ctx.fillStyle=gradient;ctx.beginPath();ctx.arc(px,py,radius,0,Math.PI*2);ctx.fill();ctx.restore();
+   for(let i=0;i<3;i++){ctx.beginPath();ctx.arc(px+(random()-.5)*16,py+(random()-.5)*14,.7+random()*1.9,0,Math.PI*2);ctx.fillStyle='#77523055';ctx.fill();}
+  }else if(stage===1){
+   bubble(ctx,px,py,8+random()*9);bubble(ctx,px+8,py-5,3+random()*5);
+  }else{
+   // Wet sheen, narrow water trails and tiny rounded beads follow the coat.
+   const size=2+random()*3;ctx.beginPath();ctx.moveTo(px,py-size*1.7);ctx.bezierCurveTo(px-size*1.4,py,px-size,py+size*1.6,px,py+size*1.7);ctx.bezierCurveTo(px+size,py+size*1.6,px+size*1.4,py,px,py-size*1.7);
+   const wet=ctx.createLinearGradient(px-size,py-size,px+size,py+size);wet.addColorStop(0,'#eafffff0');wet.addColorStop(.45,'#8bc9dec9');wet.addColorStop(1,'#559cbfa0');ctx.fillStyle=wet;ctx.fill();
+   ctx.beginPath();ctx.moveTo(px-size*.25,py-size*.5);ctx.lineTo(px-size*.25,py+size*.5);ctx.strokeStyle='#fff9';ctx.lineWidth=1;ctx.stroke();
+   if(random()>.62){ctx.beginPath();ctx.moveTo(px,py+size*2);ctx.quadraticCurveTo(px+2,py+size*3,px,py+size*4);ctx.strokeStyle='#79b4cd55';ctx.lineWidth=1.3;ctx.stroke();}
+  }
  }
- totalPixels=Math.max(1,countPixels());
-}
-function updateProgress(percent){const value=stage>=4?100:Math.round((stage+percent/100)/4*100);document.querySelector('#progressFill').style.width=value+'%';document.querySelector('#progress').setAttribute('aria-valuenow',String(value));document.querySelector('#stageLabel').textContent=stage>=4?'洗好囉！':`${stepNames[stage]} ${percent}%`;}
+ clipToFur(ctx);totalPixels=Math.max(1,countPixels());
+}function updateProgress(percent){const value=stage>=4?100:Math.round((stage+percent/100)/4*100);document.querySelector('#progressFill').style.width=value+'%';document.querySelector('#progress').setAttribute('aria-valuenow',String(value));document.querySelector('#stageLabel').textContent=stage>=4?'洗好囉！':`${stepNames[stage]} ${percent}%`;}
 function renderUI(){
  document.querySelectorAll('[data-pet]').forEach(b=>{const active=Number(b.dataset.pet)===petIndex;b.classList.toggle('selected',active);b.setAttribute('aria-pressed',String(active));});
  const steps=document.querySelector('#steps');steps.replaceChildren();stepNames.forEach((name,index)=>{const s=document.createElement('span');s.className='step'+(index===stage?' current':index<stage?' done':'');s.textContent=`${index+1} ${name}`;steps.append(s);});
@@ -43,8 +80,12 @@ function renderUI(){
  for(const key of ['soap','rinse','dry','pink','blue','gold']){const b=document.createElement('button');b.type='button';b.className='tile';b.dataset.tool=key;b.innerHTML=Play.svg(toolArt(key),'-40 -38 80 76');b.append(document.createTextNode(toolNames[key]));b.disabled=stage!==(['soap','rinse','dry'].indexOf(key)===-1?3:['soap','rinse','dry'].indexOf(key));b.setAttribute('aria-pressed','false');b.addEventListener('pointerdown',event=>startTool(event,key));b.addEventListener('click',()=>selectTool(key));tools.append(b);}
 }
 function selectTool(key){selected=key;document.querySelectorAll('[data-tool]').forEach(b=>{b.classList.toggle('selected',b.dataset.tool===key);b.setAttribute('aria-pressed',String(b.dataset.tool===key));});}
-function reset(){clearTimeout(celebrationTimer);Play.endDrag(null,true);stage=0;selected=null;bow=null;scene.innerHTML=Play.svg(sceneArt(),'0 0 480 360',pets[petIndex].name);canvas=document.createElement('canvas');canvas.width=480;canvas.height=360;scene.append(canvas);ctx=canvas.getContext('2d',{willReadFrequently:true});seedOverlay();renderUI();updateProgress(0);hint.textContent='拿泡泡海綿，來回搓掉髒髒的地方！';}
-function scrub(x,y){const point=Play.point(scene,x,y);if(!point.inside)return;const rect=scene.getBoundingClientRect();ctx.globalCompositeOperation='destination-out';ctx.beginPath();ctx.arc(point.x,point.y,22/rect.width*480,0,Math.PI*2);ctx.fill();}
+function reset(){clearTimeout(celebrationTimer);Play.endDrag(null,true);stage=0;selected=null;bow=null;scene.innerHTML=Play.svg(sceneArt(),'0 0 480 360',pets[petIndex].name);canvas=document.createElement('canvas');canvas.width=480;canvas.height=360;scene.append(canvas);ctx=canvas.getContext('2d',{willReadFrequently:true});furMask=makeFurMask();lather=document.createElement('canvas');lather.width=480;lather.height=360;lather.setAttribute('aria-hidden','true');scene.append(lather);latherCtx=lather.getContext('2d');seedOverlay();renderUI();updateProgress(0);hint.textContent='拿泡泡海綿，來回搓掉髒髒的地方！';}
+function scrub(x,y){const point=Play.point(scene,x,y);if(!point.inside)return;const rect=scene.getBoundingClientRect();ctx.globalCompositeOperation='destination-out';ctx.beginPath();ctx.arc(point.x,point.y,22/rect.width*480,0,Math.PI*2);ctx.fill();
+ if(stage===0){
+  const random=randomGenerator(Math.round(point.x)*711+Math.round(point.y)*39);bubble(latherCtx,point.x,point.y,12+random()*6);bubble(latherCtx,point.x-10,point.y+7,5+random()*4);clipToFur(latherCtx);
+ }
+}
 function startTool(event,key){
  if(stage>=4||dialog.open)return;
  const expected=['soap','rinse','dry'][stage];if(stage<3&&key!==expected){hint.textContent='先完成現在的步驟喔！';return;}
