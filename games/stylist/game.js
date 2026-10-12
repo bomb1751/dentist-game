@@ -150,12 +150,24 @@ function shoes(s) {
   let part='';
   if(i===5)part=path('M-12 4H11L15 18Q0 28 -25 19Q-26 8 -12 4Z',s.face.color,darken(s.face.color),2);
   else if(i===1)part=path('M-12 -15H13V12L17 20Q-1 29 -26 20Q-26 8 -13 7Z',c,edge,2)+path('M-12 -10H12M-25 20Q0 27 17 20','none','#fff8e8',3);
-  else {
+  else if(i===3 || i===4){
+   const skin=s.face.color;
+   part=path('M-9 -1Q-25 2 -28 12Q-31 23 -13 27Q7 31 18 20L17 7Q15 -2 -9 -1Z',c,edge,2);
+   part+=path('M-7 1Q-15 3 -20 10Q-27 14 -23 19Q-9 26 11 17L10 2Q2 -2 -7 1Z',skin,darken(skin),1);
+   part+=path('M-21 12L-18 14M-18 9L-15 11M-14 7L-12 9','none',darken(skin),1);
+   if(i===4){
+    const straps='M-19 18L-12 11L-2 3M-12 11L9 16';
+    part+=path(straps,'none',edge,7)+path(straps,'none',c,4.5)+ellipse(-12,11,2.5,2.5,c)+path('M-10 9L-3 4','none','#ffffff77',1.3);
+   }else{
+    const straps='M-19 8L-14 22M-4 1L1 21M11 -2L13 18';
+    part+=path(straps,'none',edge,8)+path(straps,'none',c,5.5)+path('M-10 -3H12','none',edge,8)+path('M-10 -3H12','none',c,5);
+    part+='<rect x="5" y="-7" width="8" height="8" rx="2" fill="#f8d877" stroke="#b99040" stroke-width="1.2"/>'+path('M9 -5V-1','none',edge,1);
+   }
+   part+=path('M-26 23Q-6 33 15 24','none',edge,2);
+  }  else {
    part=path('M-12 3H12L17 19Q-2 28 -26 19Q-26 7 -12 3Z',i===3||i===4?s.face.color:c,edge,2);
    if(i===0)part+=path('M-23 19Q0 25 16 19','none','#fff8e8',4)+path('M-9 7L4 10M-12 11L2 14','none','#fff8e8',2);
    if(i===2)part+=path('M-12 4Q0 15 12 4','none','#fff8e8',5)+path('M-12 11L12 13','none',edge,4)+ellipse(7,13,2,2,'#efca6b');
-   if(i===3)part+=path('M-15 6L12 13M-20 12L8 19','none',c,5)+path('M-24 21Q0 29 16 21','none',c,4);
-   if(i===4)part+=path('M-24 11Q-12 2 0 7L5 19Q-12 22 -25 17Z',c,edge,2);
   }
   return `<g transform="translate(${x} 450) scale(${flip} 1)">${part}</g>`;
  }
