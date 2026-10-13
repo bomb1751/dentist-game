@@ -76,7 +76,7 @@ function cakeArt(){
  }
  const current=segments.at(-1),topColor=current.key==='sponge'?'#f0d2a9':({vanillaGlaze:'#fff6e8',strawberryGlaze:'#eeb1c3',chocolateGlaze:'#946950',pudding:'#f2d183'}[current.items.find(key=>!key.endsWith('Dice'))]||'#e8bc8b');
  art+='</g>'+r(138,top,204,284-top,14,'none','#cfa980')+e(240,top,102,25,topColor,'#dcc3a1');
- if(current.key==='filling')current.items.forEach((key,index)=>{art+=renderFoodAt(key,180+(index%5)*30,top+(index%2)*7,.28,0);});
+ if(current.key==='filling')current.items.filter(key=>key.endsWith('Dice')).forEach((key,index)=>{art+=renderFoodAt(key,180+(index%5)*30,top+(index%2)*7,.28,0);});
  return art;
 }function renderFoodAt(key,x,y,scale=.65,angle=0){return `<g transform="translate(${x} ${y}) rotate(${angle}) scale(${scale})">${foodArt(key)}</g>`;}
 function pizzaLayer(item,index){
