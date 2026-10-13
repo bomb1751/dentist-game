@@ -26,6 +26,7 @@ const games = [
     description:'搓掉髒污、沖掉泡泡、吹乾毛毛，再自由搭配頭飾、眼鏡和領巾。',
     href:'games/pet-bath/', image:'images/pet-bath.svg?v=18', action:'開始洗澡', mode:'動手清洗 · 九位小客人',
   },
+  {title:'小小看診室',category:'溫柔照顧 · 扮演醫生',description:'量耳溫、看耳朵和喉嚨、聽診，再陪小病人完成照顧。',href:'games/doctor/',image:'images/doctor.svg?v=19',action:'開始看診',mode:'五種情境 · 拖曳操作'}
 ];
 const list = document.querySelector('#gamesList');
 for (const game of games) {
