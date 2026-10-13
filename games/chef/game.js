@@ -38,32 +38,47 @@ function foodArt(key){
  return [[-17,-7,'#e88dad'],[0,5,'#8db99b'],[16,-8,'#9c99cf'],[-12,13,'#f0c568'],[20,13,'#ec916a']].map(([x,y,c])=>p(`M${x} ${y}L${x+6} ${y-4}`,'none',c,4)).join('');
 }
 function cakeSegments(){
- const parts=[{key:'sponge',height:40},{key:'plain',height:8},{key:'sponge',height:40}];
+ const parts=[{key:'sponge',height:66}];
  for(const item of placed.filter(item=>item.kind==='add')){
-  if(item.key==='sponge')parts.push({key:'plain',height:5},{key:'sponge',height:24});
-  else parts.push({key:item.key,height:item.key==='pudding'?20:16},{key:'sponge',height:26});
+  if(item.key==='sponge')parts.push({key:'sponge',height:40});
+  else {
+   let layer=parts.at(-1);
+   if(layer.key!=='filling'){layer={key:'filling',height:22,items:[]};parts.push(layer);}
+   layer.items.push(item.key);
+  }
  }
  const natural=parts.reduce((n,part)=>n+part.height,0),scale=Math.min(1,214/natural);
  return parts.map(part=>({...part,height:part.height*scale}));
 }
 function cakeTop(){return 284-cakeSegments().reduce((n,part)=>n+part.height,0);}
-function cakeArt(){
- const top=cakeTop();let y=284,art=e(240,287,139,16,'#eddbcf');
- art+=`<defs><clipPath id="cakeBody"><rect x="138" y="${top}" width="204" height="${284-top}" rx="14"/></clipPath></defs><g clip-path="url(#cakeBody)">`;
- for(const part of cakeSegments()){
-  y-=part.height;
-  const color={sponge:'#eac6a1',plain:'#fff3dc',vanillaGlaze:'#fff6e8',strawberryGlaze:'#eeb1c3',chocolateGlaze:'#946950',pudding:'#f2d183',peachDice:'#fff0df',orangeDice:'#fff2d7',grapeDice:'#f6eaf4'}[part.key];
-  art+=r(138,y,204,part.height,0,color);
-  if(part.key==='pudding')art+=r(138,y,204,Math.min(3,part.height/4),0,'#c99460');
-  if(part.key.endsWith('Dice')){
-   const c={peachDice:'#efb28a',orangeDice:'#edb148',grapeDice:'#a58bbc'}[part.key],size=Math.min(10,part.height-2);
-   for(let i=0;i<9;i++)art+=r(149+i*21,y+(part.height-size)/2,size,size,2,c)+p(`M${151+i*21} ${y+part.height/2-1}H${155+i*21}`,'none','#ffffff77',1);
+function fillingArt(part,y){
+ const colors={vanillaGlaze:'#fff6e8',strawberryGlaze:'#eeb1c3',chocolateGlaze:'#946950',pudding:'#f2d183'};
+ const bases=part.items.filter(key=>!key.endsWith('Dice')),fruits=part.items.filter(key=>key.endsWith('Dice'));
+ let art=r(138,y,204,part.height,0,'#e8bc8b');
+ bases.forEach((key,index)=>{
+  const width=204/bases.length;art+=r(138+index*width,y,width,part.height,0,colors[key]);
+  if(key==='pudding')art+=r(138+index*width,y,width,Math.min(3,part.height/4),0,'#c99460');
+ });
+ if(fruits.length){const size=Math.min(10,part.height-2),count=Math.max(12,fruits.length*5);
+  for(let i=0;i<count;i++){const c={peachDice:'#efb28a',orangeDice:'#edb148',grapeDice:'#a58bbc'}[fruits[i%fruits.length]],x=143+i*(194/count);
+   art+=r(x,y+(part.height-size)/2,size,size,2,c)+p(`M${x+2} ${y+part.height/2-1}H${x+size-2}`,'none','#ffffff66',1);
   }
-  if(part.key==='sponge')for(let i=0;i<12;i++)art+=e(149+i*16,y+part.height*.6,1.7,1.2,'#d8b28a66');
  }
- return art+'</g>'+r(138,top,204,284-top,14,'none','#cfa980')+e(240,top,102,25,'#fff0d7','#dcc3a1')+e(240,top,83,17,'none','#ead3ad',2);
+ return art;
 }
-function renderFoodAt(key,x,y,scale=.65,angle=0){return `<g transform="translate(${x} ${y}) rotate(${angle}) scale(${scale})">${foodArt(key)}</g>`;}
+function cakeArt(){
+ const segments=cakeSegments(),top=cakeTop();let y=284,art=e(240,287,139,16,'#eddbcf');
+ art+=`<defs><clipPath id="cakeBody"><rect x="138" y="${top}" width="204" height="${284-top}" rx="14"/></clipPath></defs><g clip-path="url(#cakeBody)">`;
+ for(const part of segments){
+  y-=part.height;
+  if(part.key==='filling')art+=fillingArt(part,y);
+  else {art+=r(138,y,204,part.height,0,'#eac6a1');for(let i=0;i<12;i++)art+=e(149+i*16,y+part.height*.6,1.7,1.2,'#d8b28a66');}
+ }
+ const current=segments.at(-1),topColor=current.key==='sponge'?'#f0d2a9':({vanillaGlaze:'#fff6e8',strawberryGlaze:'#eeb1c3',chocolateGlaze:'#946950',pudding:'#f2d183'}[current.items.find(key=>!key.endsWith('Dice'))]||'#e8bc8b');
+ art+='</g>'+r(138,top,204,284-top,14,'none','#cfa980')+e(240,top,102,25,topColor,'#dcc3a1');
+ if(current.key==='filling')current.items.forEach((key,index)=>{art+=renderFoodAt(key,180+(index%5)*30,top+(index%2)*7,.28,0);});
+ return art;
+}function renderFoodAt(key,x,y,scale=.65,angle=0){return `<g transform="translate(${x} ${y}) rotate(${angle}) scale(${scale})">${foodArt(key)}</g>`;}
 function pizzaLayer(item,index){
  const turn=placed.slice(0,index).filter(other=>other.kind==='add'&&other.key===item.key).length;
  if(item.key==='cheese')return e(240,195,143,95,'#f5d17c')+p('M152 162Q180 145 201 168M259 146Q286 160 310 149M176 241Q211 218 231 244M263 234Q291 212 326 229','none','#ffe6a3',5)+[[188,186],[294,195],[235,258],[246,135]].map(([x,y])=>e(x,y,4,3,'#dcad56')).join('');
@@ -96,7 +111,7 @@ function refresh(){
  for(const [entry,count] of Object.entries(order)){const [kind,key]=entry.split(':'),got=placed.filter(item=>item.key===key&&item.kind===kind).length;const chip=document.createElement('span');chip.className='chip'+(got>=count?' complete':'');chip.innerHTML=Play.svg(foodArt(key),'-40 -32 80 64');chip.append(document.createTextNode(`${kind==='decorate'?'裝飾・':kind==='add'?'加料・':''}${foods[key]} ${Math.min(got,count)}/${count}`));chips.append(chip);}
 }
 function makeOrder(){order=dish==='cake'?{'add:pudding':1,'add:peachDice':1,'decorate:orangeSlice':1,'decorate:greenGrape':1}:{...Object.fromEntries([...dishes.pizza.add].sort(()=>Math.random()-.5).slice(0,3).map(key=>['add:'+key,1])),'decorate:basil':1};}
-function reset(){Play.endDrag(null,true);placed=[];selected=null;ingredientKind="add";makeOrder();renderPantry();refresh();hint.textContent=mode==='order'?'照小訂單拖曳食材，做完按「上菜」':(dish==='cake'?'加料夾進蛋糕層中間，裝飾自由擺在喜歡的位置。':'先加料自動鋪好，再切到裝飾自由擺放。');}
+function reset(){Play.endDrag(null,true);placed=[];selected=null;ingredientKind="add";makeOrder();renderPantry();refresh();hint.textContent=mode==='order'?'照小訂單拖曳食材，做完按「上菜」':(dish==='cake'?'同一層可以放多種料，加蛋糕層才蓋上並換下一層。':'先加料自動鋪好，再切到裝飾自由擺放。');}
 function setSelected(key){selected=key;document.querySelectorAll('[data-food]').forEach(b=>{b.classList.toggle('selected',b.dataset.food===key);b.setAttribute('aria-pressed',String(b.dataset.food===key));});}
 function startIngredient(event,key){
  if(dialog.open)return;setSelected(key);const kind=ingredientKind;
@@ -116,7 +131,7 @@ function renderPantry(){
 }
 for(const [key,value] of Object.entries(dishes)){const b=document.createElement('button');b.type='button';b.className='tab';b.dataset.dish=key;b.textContent=value.name;b.addEventListener('click',()=>{dish=key;reset();});document.querySelector('#dishTabs').append(b);}
 document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{mode=b.dataset.mode;document.querySelector('#order').hidden=mode!=='order';document.querySelectorAll('[data-mode]').forEach(item=>{item.classList.toggle('selected',item===b);item.setAttribute('aria-pressed',String(item===b));});reset();}));
-document.querySelectorAll('[data-kind]').forEach(b=>b.addEventListener('click',()=>{Play.endDrag(null,true);ingredientKind=b.dataset.kind;selected=null;renderPantry();refresh();hint.textContent=ingredientKind==='add'?'把食材拖過去，會自動排成固定造型。':'把裝飾拖到喜歡的位置，自由擺放。';}));
+document.querySelectorAll('[data-kind]').forEach(b=>b.addEventListener('click',()=>{Play.endDrag(null,true);ingredientKind=b.dataset.kind;selected=null;renderPantry();refresh();hint.textContent=ingredientKind==='add'?(dish==='cake'?'同一層可放多種料；拖入蛋糕層才開始下一層。':'把食材拖過去，會自動排成固定造型。'):'把裝飾拖到喜歡的位置，自由擺放。';}));
 scene.addEventListener('pointerdown',event=>{if(selected)startIngredient(event,selected);else hint.textContent='先拿一個食材喔！';});
 document.querySelector('#undo').addEventListener('click',()=>{placed.pop();refresh();hint.textContent='拿掉一個了，可以重新搭配。';});
 document.querySelector('#restart').addEventListener('click',reset);
