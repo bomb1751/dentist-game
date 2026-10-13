@@ -74,10 +74,21 @@ function cakeArt(){
   if(part.key==='filling')art+=fillingArt(part,y);
   else {art+=r(138,y,204,part.height,0,'#eac6a1');for(let i=0;i<12;i++)art+=e(149+i*16,y+part.height*.6,1.7,1.2,'#d8b28a66');}
  }
- const current=segments.at(-1),topColor=current.key==='sponge'?'#f0d2a9':({vanillaGlaze:'#fff6e8',strawberryGlaze:'#eeb1c3',chocolateGlaze:'#946950',pudding:'#f2d183'}[current.items.find(key=>!key.endsWith('Dice'))]||'#e8bc8b');
- art+='</g>'+r(138,top,204,284-top,14,'none','#cfa980')+e(240,top,102,25,topColor,'#dcc3a1');
- if(current.key==='filling')current.items.filter(key=>key.endsWith('Dice')).forEach((key,index)=>{art+=renderFoodAt(key,180+(index%5)*30,top+(index%2)*7,.28,0);});
- return art;
+ const current=segments.at(-1);
+ art+='</g>'+r(138,top,204,284-top,14,'none','#cfa980');
+ if(current.key==='sponge')art+=e(240,top,102,25,'#f0d2a9','#dcc3a1');
+ else {
+  // This surface belongs to the filling itself; it must not act as a cake lid.
+  const radius=12,bases=current.items.filter(key=>!key.endsWith('Dice')),fruits=current.items.filter(key=>key.endsWith('Dice'));
+  const colors={vanillaGlaze:'#fff6e8',strawberryGlaze:'#eeb1c3',chocolateGlaze:'#946950',pudding:'#f2d183'};
+  art+=`<defs><clipPath id="cakeSurface"><ellipse cx="240" cy="${top}" rx="102" ry="${radius}"/></clipPath></defs>`+e(240,top,102,radius,'#e8bc8b')+'<g clip-path="url(#cakeSurface)">';
+  bases.forEach((key,index)=>{const width=204/bases.length,x=138+index*width;art+=r(x,top-radius,width,radius*2,0,colors[key]);if(key==='pudding')art+=p(`M${x} ${top-4}Q${x+width/2} ${top+4} ${x+width} ${top-4}`,'none','#c99460',3);});
+  if(fruits.length)for(let i=0;i<24;i++){
+   const key=fruits[i%fruits.length],c={peachDice:'#efb28a',orangeDice:'#edb148',grapeDice:'#a58bbc'}[key],x=154+(i%12)*14,y=top-8+Math.floor(i/12)*10,size=7+(i%3);
+   art+=r(x,y,size,size,2,c)+p(`M${x+1} ${y+2}H${x+size-2}`,'none','#ffffff99',1);
+  }
+  art+='</g>'+e(240,top,102,radius,'none','#cfb38c',1.5);
+ } return art;
 }function renderFoodAt(key,x,y,scale=.65,angle=0){return `<g transform="translate(${x} ${y}) rotate(${angle}) scale(${scale})">${foodArt(key)}</g>`;}
 function pizzaLayer(item,index){
  const turn=placed.slice(0,index).filter(other=>other.kind==='add'&&other.key===item.key).length;
