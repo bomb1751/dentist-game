@@ -1,6 +1,6 @@
 const {path:p,ellipse:e,rect:r}=Play;
-const foods={tomato:'番茄',pepper:'甜椒',mushroom:'蘑菇',corn:'玉米',cheese:'起司',olive:'橄欖',patty:'漢堡肉',lettuce:'生菜',onion:'洋蔥',top:'上層麵包',berry:'草莓',blueberry:'藍莓',cream:'奶油花',candle:'小蠟燭',chocolate:'巧克力',sprinkles:'彩色糖粒',sponge:'蛋糕層',pinkCream:'草莓奶油',basil:'小葉子',cheeseStar:'星星起司',vanillaGlaze:'香草奶油夾心',strawberryGlaze:'草莓奶油夾心',chocolateGlaze:'巧克力夾心',pudding:'布丁',peachDice:'水蜜桃丁',orangeDice:'橘子丁',grapeDice:'葡萄丁',orangeSlice:'橘子瓣',greenGrape:'綠葡萄',marshmallow:'棉花糖'};
-const dishes={pizza:{name:'披薩',add:['tomato','pepper','mushroom','corn','cheese','olive'],decorate:['basil','cheeseStar','tomato','olive']},cake:{name:'蛋糕',add:['sponge','vanillaGlaze','strawberryGlaze','chocolateGlaze','pudding','peachDice','orangeDice','grapeDice'],decorate:['berry','blueberry','cream','candle','chocolate','sprinkles','orangeSlice','greenGrape','marshmallow']}};
+const foods={tomato:'番茄',pepper:'甜椒',mushroom:'蘑菇',corn:'玉米',cheese:'起司',olive:'橄欖',patty:'漢堡肉',lettuce:'生菜',onion:'洋蔥',top:'上層麵包',berry:'草莓',blueberry:'藍莓',cream:'奶油花',candle:'小蠟燭',chocolate:'巧克力',sprinkles:'彩色糖粒',sponge:'蛋糕層',pinkCream:'草莓奶油',basil:'小葉子',cheeseStar:'星星起司',vanillaGlaze:'香草奶油夾心',strawberryGlaze:'草莓奶油夾心',chocolateGlaze:'巧克力夾心',pudding:'布丁',peachDice:'水蜜桃丁',orangeDice:'橘子丁',grapeDice:'葡萄丁',orangeSlice:'橘子瓣',greenGrape:'綠葡萄',marshmallowWhite:'白色棉花糖',marshmallowPink:'粉紅棉花糖',marshmallowPurple:'紫色棉花糖',marshmallowMint:'薄荷棉花糖'};
+const dishes={pizza:{name:'披薩',add:['tomato','pepper','mushroom','corn','cheese','olive'],decorate:['basil','cheeseStar','tomato','olive']},cake:{name:'蛋糕',add:['sponge','vanillaGlaze','strawberryGlaze','chocolateGlaze','pudding','peachDice','orangeDice','grapeDice'],decorate:['berry','blueberry','cream','candle','chocolate','sprinkles','orangeSlice','greenGrape','marshmallowWhite','marshmallowPink','marshmallowPurple','marshmallowMint']}};
 let dish='pizza',mode='free',ingredientKind='add',selected=null,placed=[],order={};
 const scene=document.querySelector('#scene'),hint=document.querySelector('#hint'),dialog=document.querySelector('#celebration');
 function foodArt(key){
@@ -25,8 +25,8 @@ function foodArt(key){
  }
  if(key==='pudding')return p('M-19 -13H19L26 15Q0 27 -26 15Z','#f3d279','#caaa58')+e(0,-13,19,6,'#c98b53')+p('M-16 -4L-19 11','none','#fff4bd',3);
  if(key==='orangeSlice')return p('M-25 -8Q-2 -26 24 -8Q13 19 -11 20Z','#ffd78b','#eab151')+p('M-20 -6Q-1 -19 19 -6Q10 13 -9 15Z','#f4b953')+p('M-4 -10L-10 14M-4 -10L9 10M-4 -10L18 -4','none','#fff3cd',2);
- if(key==='greenGrape')return [[0,-11],[-13,1],[13,1],[-6,13],[7,13]].map(([x,y])=>e(x,y,9,10,'#a6c87c','#87aa61')+e(x-2,y-3,2.5,3,'#d7e8b8')).join('');
- if(key==='marshmallow')return r(-25,-11,24,31,8,'#fff7ee','#e1d1c8')+r(3,-21,25,32,8,'#f2c5d5','#d9a5bc')+p('M-20 -5V10M9 -14V0','none','#ffffffaa',3);
+ if(key==='greenGrape')return e(0,0,13,16,'#a6c87c','#87aa61')+e(-4,-5,3.5,5,'#d7e8b8');
+ if(key.startsWith('marshmallow')){const color={marshmallowWhite:'#fff7ee',marshmallowPink:'#f2c5d5',marshmallowPurple:'#cbb9e2',marshmallowMint:'#b9dfcf'}[key];return r(-13,-18,26,36,9,color,'#ccb9bd')+e(0,-14,10,4,'#ffffff55')+p('M-8 -7V10','none','#ffffffaa',3);}
  if(key==='sponge')return r(-29,-16,58,33,7,'#eac6a1','#cfa980')+p('M-28 -6H28M-28 6H28','none','#fff2d5',4);
  if(['vanillaGlaze','strawberryGlaze','chocolateGlaze'].includes(key)){
   const color={vanillaGlaze:'#fff5e6',strawberryGlaze:'#f2a8b9',chocolateGlaze:'#936650'}[key];
@@ -43,30 +43,29 @@ function cakeSegments(){
   if(item.key==='sponge')parts.push({key:'sponge',height:40});
   else {
    let layer=parts.at(-1);
-   if(layer.key!=='filling'){layer={key:'filling',height:22,items:[]};parts.push(layer);}
-   layer.items.push(item.key);
+   if(layer.key!=='filling'){layer={key:'filling',height:0,items:[]};parts.push(layer);}
+   layer.items.push(item.key);layer.height+=fillingHeight(item.key);
   }
  }
  const natural=parts.reduce((n,part)=>n+part.height,0),scale=Math.min(1,214/natural);
  return parts.map(part=>({...part,height:part.height*scale}));
 }
 function cakeTop(){return 284-cakeSegments().reduce((n,part)=>n+part.height,0);}
+function fillingHeight(key){return key==='pudding'?22:key.endsWith('Dice')?14:12;}
 function fillingArt(part,y){
- const colors={vanillaGlaze:'#fff6e8',strawberryGlaze:'#eeb1c3',chocolateGlaze:'#946950',pudding:'#f2d183'};
- const bases=part.items.filter(key=>!key.endsWith('Dice')),fruits=part.items.filter(key=>key.endsWith('Dice'));
- let art=r(138,y,204,part.height,0,'#e8bc8b');
- bases.forEach((key,index)=>{
-  const width=204/bases.length;art+=r(138+index*width,y,width,part.height,0,colors[key]);
-  if(key==='pudding')art+=r(138+index*width,y,width,Math.min(3,part.height/4),0,'#c99460');
- });
- if(fruits.length){const size=Math.min(10,part.height-2),count=Math.max(12,fruits.length*5);
-  for(let i=0;i<count;i++){const c={peachDice:'#efb28a',orangeDice:'#edb148',grapeDice:'#a58bbc'}[fruits[i%fruits.length]],x=143+i*(194/count);
-   art+=r(x,y+(part.height-size)/2,size,size,2,c)+p(`M${x+2} ${y+part.height/2-1}H${x+size-2}`,'none','#ffffff66',1);
+ const colors={vanillaGlaze:'#fff6e8',strawberryGlaze:'#eeb1c3',chocolateGlaze:'#946950',pudding:'#f2d183',peachDice:'#efd0ad',orangeDice:'#f0d49a',grapeDice:'#cbb6da'};
+ const natural=part.items.reduce((sum,key)=>sum+fillingHeight(key),0),scale=part.height/natural;
+ let bottom=y+part.height,art='';
+ for(const key of part.items){
+  const height=fillingHeight(key)*scale;bottom-=height;art+=r(138,bottom,204,height,0,colors[key]);
+  if(key==='pudding')art+=r(138,bottom,204,Math.min(3,height/5),0,'#c99460');
+  if(key.endsWith('Dice')){
+   const color={peachDice:'#efb28a',orangeDice:'#edb148',grapeDice:'#a58bbc'}[key],size=Math.min(9,height-1);
+   for(let i=0;i<14;i++){const x=143+i*14;art+=r(x,bottom+(height-size)/2,size,size,2,color)+p(`M${x+1} ${bottom+height/2-1}H${x+size-2}`,'none','#ffffff88',1);}
   }
  }
  return art;
-}
-function cakeArt(){
+}function cakeArt(){
  const segments=cakeSegments(),top=cakeTop();let y=284,art=e(240,287,139,16,'#eddbcf');
  art+=`<defs><clipPath id="cakeBody"><rect x="138" y="${top}" width="204" height="${284-top}" rx="14"/></clipPath></defs><g clip-path="url(#cakeBody)">`;
  for(const part of segments){
@@ -79,15 +78,13 @@ function cakeArt(){
  if(current.key==='sponge')art+=e(240,top,102,25,'#f0d2a9','#dcc3a1');
  else {
   // This surface belongs to the filling itself; it must not act as a cake lid.
-  const radius=12,bases=current.items.filter(key=>!key.endsWith('Dice')),fruits=current.items.filter(key=>key.endsWith('Dice'));
-  const colors={vanillaGlaze:'#fff6e8',strawberryGlaze:'#eeb1c3',chocolateGlaze:'#946950',pudding:'#f2d183'};
-  art+=`<defs><clipPath id="cakeSurface"><ellipse cx="240" cy="${top}" rx="102" ry="${radius}"/></clipPath></defs>`+e(240,top,102,radius,'#e8bc8b')+'<g clip-path="url(#cakeSurface)">';
-  bases.forEach((key,index)=>{const width=204/bases.length,x=138+index*width;art+=r(x,top-radius,width,radius*2,0,colors[key]);if(key==='pudding')art+=p(`M${x} ${top-4}Q${x+width/2} ${top+4} ${x+width} ${top-4}`,'none','#c99460',3);});
-  if(fruits.length)for(let i=0;i<24;i++){
-   const key=fruits[i%fruits.length],c={peachDice:'#efb28a',orangeDice:'#edb148',grapeDice:'#a58bbc'}[key],x=154+(i%12)*14,y=top-8+Math.floor(i/12)*10,size=7+(i%3);
-   art+=r(x,y,size,size,2,c)+p(`M${x+1} ${y+2}H${x+size-2}`,'none','#ffffff99',1);
-  }
-  art+='</g>'+e(240,top,102,radius,'none','#cfb38c',1.5);
+  const radius=5,key=current.items.at(-1),fruits=key.endsWith('Dice')?[key]:[];
+  const colors={vanillaGlaze:'#fff6e8',strawberryGlaze:'#eeb1c3',chocolateGlaze:'#946950',pudding:'#c99460',peachDice:'#efd0ad',orangeDice:'#f0d49a',grapeDice:'#cbb6da'};
+  art+=`<defs><clipPath id="cakeSurface"><ellipse cx="240" cy="${top}" rx="102" ry="${radius}"/></clipPath></defs>`+e(240,top,102,radius,colors[key])+'<g clip-path="url(#cakeSurface)">';
+  if(fruits.length)for(let i=0;i<18;i++){
+   const color={peachDice:'#efb28a',orangeDice:'#edb148',grapeDice:'#a58bbc'}[key],x=152+i*10;
+   art+=r(x,top-3,6,6,1.5,color)+p(`M${x+1} ${top-1}H${x+4}`,'none','#ffffff99',1);
+  }  art+='</g>'+e(240,top,102,radius,'none','#cfb38c',1.5);
  } return art;
 }function renderFoodAt(key,x,y,scale=.65,angle=0){return `<g transform="translate(${x} ${y}) rotate(${angle}) scale(${scale})">${foodArt(key)}</g>`;}
 function pizzaLayer(item,index){
