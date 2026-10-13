@@ -28,7 +28,8 @@ const games = [
     image: 'images/stylist.svg',
     action: '開始搭配',
     mode: '自由換裝 · 可以存成圖片',
-  }
+  },
+  {title:'三車道小車手',category:'反應挑戰 · 左右閃躲',description:'左右換道避開車輛，挑戰能撐幾秒！最高紀錄保留在本次分頁。',href:'games/traffic/',image:'images/traffic.svg',action:'開始出發',mode:'鍵盤 / 觸控 · 挑戰紀錄'}
 ];
 const list = document.querySelector('#gamesList');
 for (const game of games) {
