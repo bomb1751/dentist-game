@@ -21,7 +21,7 @@ const games = [
     href:'games/pet-bath/', image:'images/pet-bath.svg?v=18', action:'開始洗澡', mode:'動手清洗 · 九位小客人',
   },
 {title:'三車道小車手',category:'反應挑戰 · 左右閃躲',description:'左右換道避開車輛，挑戰能撐幾秒！最高紀錄保留在本次分頁。',href:'games/traffic/',image:'images/traffic.svg',action:'開始出發',mode:'鍵盤 / 觸控 · 挑戰紀錄'},
-{title:'彩虹寶石收集',category:'收集挑戰 · 彩色寶石',description:'左右移動接住各種顏色與形狀的寶石，60 秒挑戰最多收集紀錄！',href:'games/gems/',image:'images/gems.svg',action:'開始收集',mode:'鍵盤 / 觸控 · 收集紀錄'},
+{title:'彩虹寶石收集',category:'收集挑戰 · 彩色寶石',description:'在水晶森林裡跑步，接住彩色寶石，挑戰 60 秒收集紀錄！',href:'games/gems/',image:'images/gems.svg?v=23',action:'開始收集',mode:'鍵盤 / 觸控 · 收集紀錄'},
 {
     title: '小小造型師',
     category: '自由創作 · 色彩搭配',
