@@ -23,8 +23,8 @@ const games = [
   },
   {
     title:'寵物洗澡店', category:'溫柔照顧 · 泡泡時光',
-    description:'搓掉髒污、沖掉泡泡、吹乾毛毛，再幫小動物戴上漂亮蝴蝶結。',
-    href:'games/pet-bath/', image:'images/pet-bath.svg', action:'開始洗澡', mode:'動手清洗 · 三位小客人',
+    description:'搓掉髒污、沖掉泡泡、吹乾毛毛，再自由搭配頭飾、眼鏡和領巾。',
+    href:'games/pet-bath/', image:'images/pet-bath.svg?v=18', action:'開始洗澡', mode:'動手清洗 · 九位小客人',
   },
 ];
 const list = document.querySelector('#gamesList');
