@@ -8,15 +8,9 @@ const games = [
     image: 'images/dentist.svg',
     action: '開始看診',
     mode: '拖曳遊玩 · 手機也能玩',
-  },  {
-    title: '小小造型師',
-    category: '自由創作 · 色彩搭配',
-    description: '換臉形、變髮型，搭配五官和衣服。創作一個屬於你的角色！',
-    href: 'games/stylist/',
-    image: 'images/stylist.svg',
-    action: '開始搭配',
-    mode: '自由換裝 · 可以存成圖片',
-  },  {
+  },
+  {title:'小小看診室',category:'溫柔照顧 · 扮演醫生',description:'量耳溫、看耳朵和喉嚨、聽診，再陪小病人完成照顧。',href:'games/doctor/',image:'images/doctor.svg?v=19',action:'開始看診',mode:'五種情境 · 拖曳操作'},
+  {
     title:'小小廚師', category:'動手製作 · 美味創作',
     description:'做披薩、疊蛋糕夾心，再自由裝飾。手機橫放也能輕鬆拖曳料理！',
     href:'games/chef/', image:'images/chef.svg?v=11', action:'開始料理', mode:'拖曳食材 · 支援橫放',
@@ -26,7 +20,15 @@ const games = [
     description:'搓掉髒污、沖掉泡泡、吹乾毛毛，再自由搭配頭飾、眼鏡和領巾。',
     href:'games/pet-bath/', image:'images/pet-bath.svg?v=18', action:'開始洗澡', mode:'動手清洗 · 九位小客人',
   },
-  {title:'小小看診室',category:'溫柔照顧 · 扮演醫生',description:'量耳溫、看耳朵和喉嚨、聽診，再陪小病人完成照顧。',href:'games/doctor/',image:'images/doctor.svg?v=19',action:'開始看診',mode:'五種情境 · 拖曳操作'}
+  {
+    title: '小小造型師',
+    category: '自由創作 · 色彩搭配',
+    description: '換臉形、變髮型，搭配五官和衣服。創作一個屬於你的角色！',
+    href: 'games/stylist/',
+    image: 'images/stylist.svg',
+    action: '開始搭配',
+    mode: '自由換裝 · 可以存成圖片',
+  }
 ];
 const list = document.querySelector('#gamesList');
 for (const game of games) {
